@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dr Jekyll &amp; Mr Hyde — Diagnostic Quiz</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.9/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{min-height:100vh;background:#0d0f14}
+::selection{background:rgba(139,0,0,.4);color:#fff}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:#111}
+::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+@keyframes fogDrift{0%{transform:translateX(-10%) translateY(0);opacity:.3}50%{transform:translateX(5%) translateY(-5px);opacity:.5}100%{transform:translateX(-10%) translateY(0);opacity:.3}}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.85}92%{opacity:.95}96%{opacity:.7}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 20px rgba(139,0,0,.3)}50%{box-shadow:0 0 40px rgba(139,0,0,.6)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+button{font-family:'Crimson Text',serif}
+input:focus{border-color:#c9b06b !important;box-shadow:0 0 12px rgba(200,170,100,.15)}
+@media print{
+  .no-print{display:none!important}
+  body{background:#fff!important;color:#000!important}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback} = React;
+
+const SECTIONS = [
+  {
+    id:"plot",title:"Plot & Narrative Structure",icon:"\u{1F4D6}",
+    questions:[
+      {q:"Who narrates the majority of the novella?",options:["Dr Jekyll","Mr Utterson","Dr Lanyon","Mr Enfield"],answer:1,explanation:"Utterson is the focaliser. Stevenson uses his limited, rational perspective to build suspense and mirror the reader\u2019s gradual discovery."},
+      {q:"In Chapter 1, what incident involving a child does Enfield describe?",options:["Hyde kidnaps a child","Hyde tramples a young girl","Hyde frightens a group of children","Hyde steals from a child"],answer:1,explanation:"Enfield witnesses Hyde colliding with and trampling a girl at a street corner, establishing Hyde as morally repugnant from the outset."},
+      {q:"The novella uses a layered narrative structure. What effect does this fragmented structure create?",options:["It simplifies the plot for the reader","It mirrors the theme of duality and concealment, revealing truth gradually","It makes the story feel rushed","It focuses entirely on Jekyll\u2019s perspective"],answer:1,explanation:"Multiple narrative voices (Utterson, Lanyon, Jekyll) create a fragmented text reflecting the fragmented self. No single narrator possesses complete truth."},
+      {q:"What does Utterson discover when he finally enters Jekyll\u2019s cabinet?",options:["Jekyll\u2019s dead body","Hyde\u2019s dead body in Jekyll\u2019s clothes","An empty room","Hyde, alive and hiding"],answer:1,explanation:"Hyde is found dead, wearing Jekyll\u2019s too-large clothes, having taken poison. This visual detail reinforces the physical relationship between the two identities."},
+      {q:"Which event occurs FIRST in the novella?",options:["The murder of Sir Danvers Carew","The door scene described by Enfield","Dr Lanyon\u2019s death","The incident at the window"],answer:1,explanation:"The door scene (Ch.1) opens the novella. Correct order: Door scene, Carew murder, Window incident, Lanyon\u2019s death, Jekyll\u2019s statement."},
+      {q:"What is the significance of Jekyll\u2019s building having two different faces?",options:["It shows Jekyll is wealthy","The respectable front and sinister rear door symbolise Jekyll\u2019s duality","It is a common Victorian architectural style","It helps Hyde escape from the police"],answer:1,explanation:"The back door faces a dingy street while the front is respectable \u2014 the building symbolises Jekyll\u2019s own duality: respectability on one side, concealed vice on the other."},
+      {q:"Why does the novella withhold the truth about Jekyll and Hyde\u2019s identity until the final two chapters?",options:["Stevenson forgot to include it earlier","To create suspense and mirror Victorian society\u2019s culture of concealment","Because Jekyll only discovers the truth at the end","To keep the novella short"],answer:1,explanation:"Withholding truth replicates Victorian society\u2019s refusal to acknowledge hidden truths. The reader, like Utterson, is complicit in a gradual uncovering."},
+      {q:"What does Dr Lanyon witness that causes his decline and death?",options:["Jekyll committing a crime","Hyde\u2019s transformation into Jekyll","The murder of Carew","Jekyll destroying his laboratory"],answer:1,explanation:"Lanyon witnesses Hyde drink the potion and transform. The shock of seeing the impossible \u2014 the collapse of rational science \u2014 literally kills him."},
+      {q:"Which is an example of a sealed or locked document in the novella?",options:["Enfield\u2019s diary","Lanyon\u2019s letter, not to be opened until Jekyll\u2019s death","A police report","Hyde\u2019s journal"],answer:1,explanation:"Sealed documents (Jekyll\u2019s will, Lanyon\u2019s letter) defer revelation and build tension, while reflecting the culture of secrecy."},
+      {q:"What genre conventions does Stevenson combine in the novella?",options:["Romance and comedy","Gothic fiction and detective fiction","Science fiction and pastoral","Satire and tragedy"],answer:1,explanation:"Gothic: doubles, dark settings, horror, the uncanny. Detective: investigation, clues, witnesses, sealed documents. Some critics also identify sensation fiction."}
+    ],
+    notes:[
+      {title:"Chapter-by-Chapter Summary",points:["Ch.1 Story of the Door \u2014 Enfield tells Utterson about Hyde trampling a girl. The sinister door is the rear of Jekyll\u2019s house.","Ch.2 Search for Mr Hyde \u2014 Utterson reads Jekyll\u2019s will leaving everything to Hyde. Seeks out Hyde; finds him repulsive but indescribable.","Ch.3 Dr Jekyll Was Quite at Ease \u2014 Jekyll dismisses concerns, insists he can be rid of Hyde whenever he chooses.","Ch.4 The Carew Murder Case \u2014 A maid witnesses Hyde beat Sir Danvers Carew to death. The turning point: violence escalates to murder.","Ch.5 Incident of the Letter \u2014 Jekyll shows a letter from Hyde. Guest reveals the handwriting matches Jekyll\u2019s.","Ch.6 Remarkable Incident of Dr Lanyon \u2014 Lanyon falls ill and dies after a profound shock. Leaves a sealed letter.","Ch.7 Incident at the Window \u2014 Jekyll\u2019s expression changes to terror. Short, unsettling chapter.","Ch.8 The Last Night \u2014 Poole and Utterson break in. Find Hyde\u2019s body in Jekyll\u2019s clothes.","Ch.9 Dr Lanyon\u2019s Narrative \u2014 First embedded narrative shifting perspective. Lanyon witnesses the transformation.","Ch.10 Henry Jekyll\u2019s Full Statement \u2014 Jekyll\u2019s confession: experiments, loss of control, final despair."]},
+      {title:"Key Structural Points",points:["Progressive revelation mirrors Victorian culture of secrecy and repression.","Multiple narrative voices create a fragmented text reflecting the fragmented self.","Combines Gothic fiction (the uncanny double, dark settings) with detective conventions (investigation, clues, testimony)."]}
+    ]
+  },
+  {
+    id:"characters",title:"Characters",icon:"\u{1F3AD}",
+    questions:[
+      {q:"What is Utterson\u2019s profession, and why is this significant?",options:["Doctor \u2014 he can diagnose Jekyll\u2019s illness","Lawyer \u2014 he embodies discretion, reason, and respectability","Banker \u2014 he controls Jekyll\u2019s finances","Journalist \u2014 he investigates stories"],answer:1,explanation:"Utterson\u2019s profession embodies Victorian values of discretion, reason, and respectability. Trained to uncover truths while maintaining confidentiality \u2014 ideal focaliser for a narrative about hidden identities."},
+      {q:"How is Hyde\u2019s appearance described by those who encounter him?",options:["Tall, handsome but cold","Repulsive but indescribable \u2014 a \u2018haunting sense of unexpressed deformity\u2019","Ordinary and forgettable","Scarred and visibly injured"],answer:1,explanation:"Characters use terms like \u2018deformed\u2019, \u2018hardly human\u2019, \u2018troglodytic\u2019, yet cannot pinpoint a specific deformity. Evil is felt instinctively rather than seen."},
+      {q:"Which character provides a genuine contrast to Jekyll\u2019s performative respectability?",options:["Mr Enfield","Mr Utterson","Dr Lanyon","Poole"],answer:1,explanation:"Utterson represents genuine self-control; Jekyll\u2019s respectability is performative. Utterson is austere, self-denying, and loyal."},
+      {q:"What is Jekyll\u2019s stated motivation for creating the potion?",options:["To become immortal","To separate his dual nature so each side could \u2018go its own way\u2019","To cure a physical illness","To take revenge on his enemies"],answer:1,explanation:"Jekyll wanted to liberate darker impulses without compromising his reputation. He sought to divide the \u2018just and unjust\u2019 elements, believing each could go its own way."},
+      {q:"What does the disagreement between Jekyll and Lanyon concern?",options:["A financial dispute","A romantic rivalry","Orthodox vs transgressive approaches to science","A political disagreement"],answer:2,explanation:"Lanyon represents orthodox, empirical science; Jekyll pursues \u2018transcendental\u2019 experiments Lanyon calls \u2018unscientific balderdash\u2019. Their rift dramatises conventional vs transgressive knowledge."},
+      {q:"Why is Hyde physically smaller than Jekyll?",options:["He is a different person entirely","Because Jekyll\u2019s evil side had been suppressed and was \u2018less robust and less developed\u2019","Hyde is younger than Jekyll","It is never explained"],answer:1,explanation:"Jekyll explains that because he had spent less of his life indulging evil, Hyde is \u2018less robust and less developed\u2019. The suppressed side is physically smaller."},
+      {q:"What role does the servant Poole play in the novella?",options:["He is the murderer","He crosses class boundaries to seek help, showing Jekyll\u2019s disintegration disrupts social order","He provides comic relief","He is Hyde\u2019s accomplice"],answer:1,explanation:"Poole crosses class boundaries by approaching Utterson for help. Servants observe what masters conceal \u2014 his alarm shows Jekyll\u2019s disintegration disrupting social order."},
+      {q:"How is Sir Danvers Carew described?",options:["A young, aggressive politician","An aged, beautiful gentleman with white hair and \u2018innocent and old-world kindness\u2019","A wealthy merchant","A retired army officer"],answer:1,explanation:"His murder is particularly shocking because the victim is so gentle and defenceless, emphasising Hyde\u2019s gratuitous cruelty."},
+      {q:"What does Jekyll mean by \u2018the thorough and primitive duality of man\u2019?",options:["Humans are fundamentally selfish","Within every person exist opposing forces of good and evil \u2014 this duality is fundamental, not acquired","Society creates evil through poverty","Only scientists experience duality"],answer:1,explanation:"Jekyll\u2019s phrase encapsulates the novella\u2019s central argument: duality is \u2018primitive\u2019 (fundamental) rather than acquired."},
+      {q:"Why is it significant that ALL the main characters are men?",options:["Stevenson couldn\u2019t write female characters","It reflects the homosocial world of upper-class Victorian London, amplifying the theme of repression","Women were not allowed to read novels","It was required by the publisher"],answer:1,explanation:"The exclusively male cast reflects homosocial Victorian London. Women\u2019s near-total absence amplifies the theme of repression and suggests lives defined by professional bonds and unspoken codes."}
+    ],
+    notes:[
+      {title:"Character Analysis",points:["Dr Henry Jekyll \u2014 Respected doctor tormented by tension between public respectability and private desires. Not purely good \u2014 his statement reveals vanity, ambition, desire for pleasure. Fatal flaw: believing he can separate his dual nature.","Mr Edward Hyde \u2014 Not separate but Jekyll\u2019s repressed desires given physical form. \u2018Ape-like\u2019, \u2018troglodytic\u2019, barely human. Small stature = underdevelopment of evil side. Violence escalates from trampling to murder.","Mr Gabriel John Utterson \u2014 Rational, loyal lawyer and reader\u2019s proxy. Embodies Victorian restraint. His failure to uncover truth suggests inadequacy of reason alone. Name puns on \u2018utterance\u2019 \u2014 ironic for a silent man.","Dr Hastie Lanyon \u2014 Represents conventional science. Death after witnessing transformation shows devastating effect of confronting truths that challenge rational worldviews.","Minor characters \u2014 Enfield (witness), Poole (loyal servant), Guest (handwriting clue), Carew (innocent victim marking escalation)."]}
+    ]
+  },
+  {
+    id:"themes",title:"Themes & Ideas",icon:"\u2697\uFE0F",
+    questions:[
+      {q:"How does Stevenson suggest duality is a universal human condition?",options:["Only Jekyll experiences duality","Jekyll\u2019s experiments reveal \u2018man is not truly one, but truly two\u2019 \u2014 duality is inherent in human nature","Stevenson presents duality as a modern invention","Duality only affects scientists"],answer:1,explanation:"Stevenson argues duality is inherent. Victorian society\u2019s refusal to acknowledge this makes it more dangerous. The novella\u2019s structure mirrors this theme."},
+      {q:"How does Victorian repression contribute to Hyde\u2019s existence?",options:["It has no effect","Repression eliminates desire","The demand to suppress all \u2018undignified\u2019 desires creates pressure that produces Hyde \u2014 repression concentrates desire","Victorian society openly accepted all behaviour"],answer:2,explanation:"Jekyll\u2019s attempt to live up to an impossible standard creates the pressure that produces Hyde. Repression doesn\u2019t eliminate desire \u2014 it concentrates it."},
+      {q:"How does Stevenson present science in the novella?",options:["Science is entirely beneficial","Science without moral restraint is dangerous","Science is irrelevant to the plot","Scientists are presented as heroic"],answer:1,explanation:"Jekyll\u2019s experiments are a cautionary tale. Science that transgresses moral boundaries leads to catastrophe, reflecting wider Victorian anxieties."},
+      {q:"How does secrecy operate as a theme?",options:["Only Jekyll keeps secrets","Secrecy pervades every level: characters, narrative structure, and buildings \u2014 Stevenson critiques Victorian hypocrisy","Secrecy is presented positively","There are no secrets in the novella"],answer:1,explanation:"Sealed letters, locked doors, unspoken suspicions. Stevenson uses secrecy to critique the gap between public respectability and private behaviour."},
+      {q:"How does the London setting contribute to the themes?",options:["London is presented as entirely pleasant","Fog symbolises moral obscurity; contrasting areas reflect the duality within individuals","The setting is irrelevant","London represents scientific progress"],answer:1,explanation:"London is a city of contrasts: respectable squares beside sinister streets. Persistent fog symbolises moral obscurity. The urban landscape reflects individual duality."},
+      {q:"Is Hyde a separate entity or part of Jekyll?",options:["Completely separate","Part of Jekyll \u2014 evil cannot be surgically removed; it is intrinsic","A supernatural demon","Jekyll\u2019s identical twin"],answer:1,explanation:"Though initially treated as separate, they are one person. Stevenson\u2019s point: evil cannot be surgically removed \u2014 \u2018All human beings are commingled out of good and evil.\u2019"},
+      {q:"What do doors and windows symbolise in the novella?",options:["Wealth and status","Thresholds between the respectable/public and the hidden/private","Escape routes","Architectural fashion"],answer:1,explanation:"Jekyll\u2019s back door gives Hyde access without passing through the front. The window scene shows Jekyll\u2019s fa\u00e7ade cracking publicly."},
+      {q:"What does the novella suggest about reputation?",options:["Reputation always reflects reality","Characters prioritise reputation above truth \u2014 Stevenson critiques a society where appearance matters more than reality","Reputation is unimportant","Only Jekyll cares about reputation"],answer:1,explanation:"Utterson suppresses suspicions to protect Jekyll\u2019s name. Jekyll creates Hyde to protect his reputation. Appearance matters more than reality."},
+      {q:"Which aspect of Hyde reflects Darwinian anxieties?",options:["His intelligence and cunning","His ape-like appearance and animalistic behaviour \u2014 reflecting fears of degeneration","His wealth and status","His legal knowledge"],answer:1,explanation:"Hyde\u2019s \u2018ape-like fury\u2019 and \u2018troglodytic\u2019 appearance reflect fears that humanity could revert to a primitive state \u2014 the concept of atavism."},
+      {q:"How does Stevenson challenge the idea that respectability equals morality?",options:["He doesn\u2019t challenge it","Jekyll is outwardly distinguished but inwardly harbours shameful desires \u2014 the most respectable fa\u00e7ade conceals the darkest impulses","All respectable characters are shown to be moral","Only lower-class characters are immoral"],answer:1,explanation:"Jekyll is the clearest example: outwardly a distinguished doctor, inwardly harbouring desires he considers shameful."}
+    ],
+    notes:[
+      {title:"Themes \u2014 Detailed Notes",points:[
+        "DUALITY \u2014 The central theme. Every person contains good and evil. Jekyll\u2019s experiment to separate them fails, suggesting duality is inseparable. The novella\u2019s structure (multiple narrators, concealed truths) mirrors this. Examiners reward analysis of HOW Stevenson presents duality through form, structure, and language.",
+        "REPRESSION & HYPOCRISY \u2014 Victorian gentlemen suppressed pleasure, emotion, desire. Jekyll concealed pleasures with \u2018an almost morbid sense of shame.\u2019 Forced repression distorts desire into something more dangerous. Hyde is the product of repression, not science alone.",
+        "SCIENCE & ITS LIMITS \u2014 Jekyll\u2019s \u2018transcendental medicine\u2019 crosses a moral line. The Lanyon\u2013Jekyll conflict dramatises debates about whether science should have moral boundaries. Stevenson warns about science without ethical restraint.",
+        "SECRECY & REPUTATION \u2014 Every character keeps secrets. Sealed letters, locked doors, unspoken suspicions. Reputation valued above truth. Stevenson critiques a society where appearances take precedence over reality.",
+        "URBAN GOTHIC & SETTING \u2014 London as more than backdrop. Fog, gaslit streets, wealthy squares vs sinister alleys. Jekyll\u2019s dual-faced house is the perfect architectural metaphor."
+      ]}
+    ]
+  },
+  {
+    id:"context",title:"Context",icon:"\u{1F3DB}\uFE0F",
+    questions:[
+      {q:"When was the novella published and what was the dominant moral code?",options:["1920 \u2014 modernist experimentation","1886 \u2014 Victorian morality: strict codes of respectability, religious observance, and self-restraint","1800 \u2014 Romantic individualism","1950 \u2014 post-war disillusionment"],answer:1,explanation:"Published in 1886, during the height of Victorian moral earnestness. Men of Jekyll\u2019s class were expected to be exemplary."},
+      {q:"How do real-life scandals of the period connect to the novella?",options:["They don\u2019t connect at all","Cases like Jack the Ripper (1888) reflected the same anxiety: evil hiding behind respectable exteriors","Victorian scandals were entirely fictional","Stevenson based Hyde on a specific criminal"],answer:1,explanation:"The novella anticipated real-life fears about the hidden lives of outwardly respectable men."},
+      {q:"How does the novella reflect Darwinian anxieties?",options:["It doesn\u2019t reference evolution","Hyde\u2019s ape-like appearance embodies \u2018atavism\u2019 \u2014 the fear that humanity could revert to a primitive state","Darwin is mentioned by name","Jekyll uses Darwin\u2019s theories in his experiment"],answer:1,explanation:"Darwin\u2019s Origin of Species (1859) raised the possibility of evolutionary regression. \u2018Degeneration theory\u2019 (1880s\u201390s) suggested civilisation could regress."},
+      {q:"Which contextual influence is correctly identified?",options:["The Industrial Revolution led to urbanisation and fears about the hidden lives of respectable men","Stevenson was reacting to the First World War","The novella was inspired by the suffragette movement","Victorian society openly encouraged self-expression"],answer:0,explanation:"Mass urbanisation created vast, anonymous cities where people could lead double lives."},
+      {q:"How does the novella reflect Victorian class consciousness?",options:["Class is never mentioned","Hyde inhabits Soho (poverty/vice) while Jekyll lives in respectability \u2014 class boundaries are rigid yet permeable","All characters are working class","Class boundaries don\u2019t exist in the novella"],answer:1,explanation:"Jekyll can cross class boundaries through Hyde, but this transgression ultimately destroys him."}
+    ],
+    notes:[
+      {title:"Essential Context",points:[
+        "VICTORIAN SOCIETY (1837\u20131901) \u2014 Rigid moral codes for middle/upper classes. Gentlemen demonstrated self-control, piety, public virtue. \u2018Fallen\u2019 behaviour widespread behind closed doors. Stevenson exposes this hypocrisy.",
+        "DARWINISM & DEGENERATION \u2014 Darwin challenged belief humans were made in God\u2019s image. \u2018Degeneration theory\u2019 (Max Nordau, 1880s\u201390s) suggested civilisation could regress. Hyde\u2019s primitive qualities embody this anxiety.",
+        "SCIENCE VS RELIGION \u2014 Increasing tension between scientific enquiry and religious faith. Jekyll\u2019s \u2018transcendental medicine\u2019 transgresses acceptable limits.",
+        "URBAN LIFE & ANONYMITY \u2014 1880s London: fog, labyrinthine streets, anonymous crowds enabled vice undetected.",
+        "\u26A0\uFE0F EXAM TIP: AQA rewards context woven into analysis, not bolted on. Avoid \u2018In Victorian times...\u2019 paragraphs. Connect context to specific textual details."
+      ]}
+    ]
+  },
+  {
+    id:"quotations",title:"Key Quotations",icon:"\u{1F58B}\uFE0F",
+    questions:[
+      {q:"\u2018If he be Mr Hyde, I shall be Mr Seek.\u2019 \u2014 Who says this and what is its significance?",options:["Jekyll \u2014 showing his scientific curiosity","Utterson (Ch.2) \u2014 wordplay on \u2018hide\u2019/\u2018seek\u2019 showing determination; foreshadows the detective narrative","Enfield \u2014 describing his first encounter","Lanyon \u2014 in his sealed letter"],answer:1,explanation:"\u2018Seek\u2019 also suggests moral and philosophical searching \u2014 the quest to understand the nature of evil."},
+      {q:"\u2018Satan\u2019s signature upon a face.\u2019 \u2014 What technique and effect?",options:["Simile \u2014 comparing Hyde to an animal","Religious language associating Hyde with the devil; \u2018signature\u2019 connects to physiognomy","Hyperbole \u2014 exaggerating Hyde\u2019s ugliness","Personification \u2014 giving evil human qualities"],answer:1,explanation:"Utterson uses religious language to describe Hyde. Evil is \u2018written on the body\u2019 yet remains indescribable \u2014 connecting to Victorian pseudo-science of physiognomy."},
+      {q:"\u2018Man is not truly one, but truly two.\u2019 \u2014 What is the significance of the repetition of \u2018truly\u2019?",options:["It\u2019s a grammatical error","It emphasises conviction \u2014 duality is presented as universal truth, challenging Victorian belief in human perfectibility","It shows Jekyll is uncertain","It is used for rhythmic effect only"],answer:1,explanation:"The central thematic statement of the novella. The repetition of \u2018truly\u2019 emphasises Jekyll\u2019s conviction that duality is universal, not personal aberration."},
+      {q:"\u2018The pleasures which I made haste to seek in my disguise were, as I have said, undignified.\u2019 \u2014 What is significant about the word \u2018undignified\u2019?",options:["It shows Hyde committed violent crimes","It\u2019s a euphemism \u2014 Jekyll\u2019s sins may not be extreme, but Victorian standards make any departure from respectability feel transgressive","It means Hyde was physically clumsy","It describes Jekyll\u2019s scientific methods"],answer:1,explanation:"Jekyll avoids specifying his pleasures, calling them merely \u2018undignified.\u2019 This euphemism is telling: concealment persists even in confession."},
+      {q:"\u2018I learned to recognise the thorough and primitive duality of man.\u2019 \u2014 What does \u2018primitive\u2019 suggest?",options:["Hyde is uneducated","Duality is ancient and fundamental, not a modern corruption \u2014 linking to Darwin and evolutionary theory","Jekyll\u2019s experiment was basic","Victorian society was uncivilised"],answer:1,explanation:"\u2018Thorough\u2019 = completeness; \u2018primitive\u2019 links to Darwin \u2014 duality is ancient, not modern. Scientific language attempts to rationalise an existential and moral crisis."}
+    ],
+    notes:[
+      {title:"Top 15 Quotations for Exam Preparation",points:[
+        "1. \u2018I incline to Cain\u2019s heresy \u2026 I let my brother go to the devil in his own way.\u2019 (Enfield, Ch.1) \u2014 Biblical allusion. Victorian non-interference enables evil.",
+        "2. \u2018If he be Mr Hyde, I shall be Mr Seek.\u2019 (Utterson, Ch.2) \u2014 Wordplay, determination, detective narrative.",
+        "3. \u2018Satan\u2019s signature upon a face.\u2019 (Utterson, Ch.2) \u2014 Religious language; physiognomy; evil visible yet unnameable.",
+        "4. \u2018A certain sinister block of building \u2026 bore the marks of prolonged and sordid negligence.\u2019 (Ch.1) \u2014 Building\u2019s dual nature = Jekyll\u2019s dual nature.",
+        "5. \u2018There was something abnormal and misbegotten in the very essence of the creature.\u2019 (Utterson, Ch.2) \u2014 \u2018Misbegotten\u2019 = unnatural creation. Echoes Frankenstein.",
+        "6. \u2018With ape-like fury, he was trampling his victim underfoot.\u2019 (Ch.4) \u2014 Darwinian degeneration. Echoes Ch.1, showing escalation.",
+        "7. \u2018The fog still slept on the wing above the drowned city.\u2019 (Ch.4) \u2014 Personification, pathetic fallacy. \u2018Drowned\u2019 = moral submersion.",
+        "8. \u2018Man is not truly one, but truly two.\u2019 (Jekyll, Ch.10) \u2014 Central thematic statement. Universal duality.",
+        "9. \u2018I learned to recognise the thorough and primitive duality of man.\u2019 (Jekyll, Ch.10) \u2014 \u2018Primitive\u2019 = Darwinism.",
+        "10. \u2018I concealed my pleasures; and \u2026 stood already committed to a profound duplicity of life.\u2019 (Jekyll, Ch.10) \u2014 \u2018Duplicity\u2019 puns on doubleness and deception.",
+        "11. \u2018The pleasures which I made haste to seek in my disguise were, as I have said, undignified.\u2019 (Jekyll, Ch.10) \u2014 Euphemism; concealment even in confession.",
+        "12. \u2018This was the shocking thing; that the slime of the pit seemed to utter cries and voices.\u2019 (Lanyon, Ch.9) \u2014 Hell imagery. Horror at transgressive science.",
+        "13. \u2018He had in his hand a heavy cane, with which he was trifling; but he answered never a word.\u2019 (Ch.4) \u2014 \u2018Trifling\u2019 = casual menace.",
+        "14. \u2018All human beings \u2026 are commingled out of good and evil.\u2019 (Jekyll, Ch.10) \u2014 \u2018Commingled\u2019 = mixed inseparably.",
+        "15. \u2018I was slowly losing hold of my original and better self, and becoming slowly incorporated with my second and worse.\u2019 (Jekyll, Ch.10) \u2014 \u2018Incorporated\u2019 = made one body. Loss of agency."
+      ]}
+    ]
+  }
+];
+
+function App() {
+  const [screen, setScreen] = useState("title");
+  const [currentSection, setCurrentSection] = useState(0);
+  const [currentQ, setCurrentQ] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [showResult, setShowResult] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showNotes, setShowNotes] = useState({});
+  const [hydeMode, setHydeMode] = useState(false);
+  const [studentName, setStudentName] = useState("");
+
+  const section = SECTIONS[currentSection];
+  const totalQuestions = SECTIONS.reduce((a,s) => a + s.questions.length, 0);
+  const answeredCount = Object.keys(answers).length;
+
+  const getScore = (sIdx) => {
+    let c = 0;
+    SECTIONS[sIdx].questions.forEach((q,qi) => { if (answers[sIdx+"-"+qi] === q.answer) c++; });
+    return c;
+  };
+  const totalScore = SECTIONS.reduce((a,_,i) => a + getScore(i), 0);
+
+  const handleAnswer = (optIdx) => {
+    if (showResult) return;
+    setSelectedAnswer(optIdx);
+    setAnswers(prev => ({...prev, [currentSection+"-"+currentQ]: optIdx}));
+    setShowResult(true);
+    setHydeMode(optIdx !== section.questions[currentQ].answer);
+  };
+
+  const nextQuestion = () => {
+    setShowResult(false);
+    setSelectedAnswer(null);
+    if (currentQ < section.questions.length - 1) setCurrentQ(currentQ + 1);
+    else if (currentSection < SECTIONS.length - 1) { setCurrentSection(currentSection + 1); setCurrentQ(0); }
+    else setScreen("results");
+  };
+
+  const goToSection = (idx) => {
+    setCurrentSection(idx); setCurrentQ(0); setShowResult(false); setSelectedAnswer(null); setScreen("quiz");
+  };
+
+  const resetQuiz = () => {
+    setAnswers({}); setCurrentSection(0); setCurrentQ(0); setShowResult(false);
+    setSelectedAnswer(null); setHydeMode(false); setShowNotes({}); setScreen("title");
+  };
+
+  const toggleNotes = (idx) => setShowNotes(prev => ({...prev, [idx]: !prev[idx]}));
+  const toggleAllNotes = () => {
+    const allOpen = SECTIONS.every((_,i) => showNotes[i]);
+    const next = {};
+    SECTIONS.forEach((_,i) => { next[i] = !allOpen; });
+    setShowNotes(next);
+  };
+
+  const progressPercent = (answeredCount / totalQuestions) * 100;
+  const isCorrect = selectedAnswer === section?.questions[currentQ]?.answer;
+
+  const tc = hydeMode
+    ? {bg:"#1a0a0a",card:"#2a1010",accent:"#8b0000",text:"#e8c8c8",border:"#5a1a1a",hi:"#ff3333"}
+    : {bg:"#0d0f14",card:"#1a1d26",accent:"#4a7c59",text:"#d4d8c8",border:"#2a3a2e",hi:"#7cb87c"};
+
+  const btnBase = {fontFamily:"'Crimson Text',serif",cursor:"pointer",border:"none",outline:"none"};
+
+  // ── TITLE ──
+  if (screen === "title") return (
+    <div style={{minHeight:"100vh",background:tc.bg,color:tc.text,fontFamily:"'Crimson Text',Georgia,serif",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,pointerEvents:"none",zIndex:0}}>
+        <div style={{position:"absolute",top:"-20%",left:"-10%",right:"-10%",height:"60%",background:"radial-gradient(ellipse at 30% 50%,rgba(139,0,0,.08) 0%,transparent 70%)",animation:"fogDrift 20s ease-in-out infinite",filter:"blur(40px)"}} />
+        <div style={{position:"absolute",bottom:"-10%",left:"-10%",right:"-10%",height:"40%",background:"radial-gradient(ellipse at 70% 50%,rgba(80,0,0,.1) 0%,transparent 70%)",animation:"fogDrift 25s ease-in-out infinite reverse",filter:"blur(50px)"}} />
+      </div>
+      <div style={{position:"relative",zIndex:1,maxWidth:800,margin:"0 auto",padding:"20px 16px",minHeight:"100vh",display:"flex",flexDirection:"column",justifyContent:"center",alignItems:"center",textAlign:"center",animation:"slideUp 1s ease"}}>
+        <div style={{fontSize:14,letterSpacing:6,textTransform:"uppercase",color:"#666",marginBottom:30}}>GCSE English Literature</div>
+        <h1 style={{fontFamily:"'UnifrakturMaguntia',cursive",fontSize:"clamp(36px,8vw,72px)",lineHeight:1.1,marginBottom:8,background:"linear-gradient(180deg,#c9b06b 0%,#8a7340 50%,#c9b06b 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",filter:"drop-shadow(0 2px 10px rgba(200,170,100,.3))",animation:"flicker 4s ease-in-out infinite"}}>Dr Jekyll &amp; Mr Hyde</h1>
+        <div style={{width:120,height:2,margin:"20px auto",background:"linear-gradient(90deg,transparent,#c9b06b,transparent)"}} />
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(18px,3.5vw,28px)",fontWeight:400,fontStyle:"italic",color:"#999",marginBottom:40,letterSpacing:1}}>Diagnostic Quiz &amp; Remedial Notes</h2>
+        <div style={{display:"flex",flexWrap:"wrap",justifyContent:"center",gap:12,marginBottom:40,maxWidth:500}}>
+          {SECTIONS.map((s,i) => <div key={i} style={{padding:"6px 16px",border:"1px solid #333",borderRadius:20,fontSize:13,color:"#888"}}>{s.icon} {s.title}</div>)}
+        </div>
+        <div style={{background:"rgba(255,255,255,.03)",border:"1px solid #2a2a2a",borderRadius:8,padding:24,marginBottom:30,maxWidth:400,width:"100%"}}>
+          <label style={{fontSize:13,color:"#666",display:"block",marginBottom:8,letterSpacing:2,textTransform:"uppercase"}}>Student Name</label>
+          <input type="text" value={studentName} onChange={e=>setStudentName(e.target.value)} placeholder="Enter your name..." style={{width:"100%",padding:"12px 16px",background:"rgba(0,0,0,.4)",border:"1px solid #333",borderRadius:6,color:"#d4d4c8",fontSize:18,fontFamily:"'Crimson Text',serif",outline:"none"}} />
+        </div>
+        <button onClick={()=>setScreen("quiz")} style={{...btnBase,padding:"16px 48px",background:"linear-gradient(135deg,#8b0000 0%,#4a0000 100%)",border:"1px solid #aa2222",borderRadius:6,color:"#e8c8c8",fontSize:18,fontFamily:"'Playfair Display',serif",letterSpacing:2,animation:"pulseGlow 3s ease-in-out infinite",transition:"all .3s"}} onMouseOver={e=>{e.currentTarget.style.transform="scale(1.05)";e.currentTarget.style.filter="brightness(1.2)"}} onMouseOut={e=>{e.currentTarget.style.transform="scale(1)";e.currentTarget.style.filter="brightness(1)"}}>Begin the Experiment</button>
+        <div style={{marginTop:16,fontSize:13,color:"#555",fontStyle:"italic"}}>{totalQuestions} questions across {SECTIONS.length} sections</div>
+      </div>
+    </div>
+  );
+
+  // ── QUIZ ──
+  if (screen === "quiz") return (
+    <div style={{minHeight:"100vh",background:tc.bg,color:tc.text,fontFamily:"'Crimson Text',Georgia,serif",position:"relative",overflow:"hidden",transition:"background .8s"}}>
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,pointerEvents:"none",zIndex:0}}>
+        <div style={{position:"absolute",top:"-20%",left:"-10%",right:"-10%",height:"60%",background:`radial-gradient(ellipse at 30% 50%,${hydeMode?'rgba(139,0,0,.08)':'rgba(74,124,89,.06)'} 0%,transparent 70%)`,animation:"fogDrift 20s ease-in-out infinite",filter:"blur(40px)"}} />
+      </div>
+      <div style={{position:"relative",zIndex:1,maxWidth:800,margin:"0 auto",padding:"20px 16px",animation:"slideUp .5s ease"}}>
+        {/* Header */}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:`1px solid ${tc.border}`,marginBottom:20,flexWrap:"wrap",gap:8}}>
+          <div style={{fontSize:13,color:"#666",letterSpacing:2,textTransform:"uppercase"}}>{studentName && <span style={{color:"#999"}}>{studentName} &mdash; </span>}Q{answeredCount+(showResult?0:1)} of {totalQuestions}</div>
+          <button onClick={()=>setScreen("results")} style={{...btnBase,padding:"6px 14px",background:"transparent",border:`1px solid ${tc.border}`,borderRadius:4,color:"#888",fontSize:12}}>View Results</button>
+        </div>
+        {/* Progress */}
+        <div style={{width:"100%",height:4,background:"#1a1a1a",borderRadius:2,marginBottom:30,overflow:"hidden"}}>
+          <div style={{width:progressPercent+"%",height:"100%",background:`linear-gradient(90deg,${tc.accent},${tc.hi})`,borderRadius:2,transition:"width .5s"}} />
+        </div>
+        {/* Section tabs */}
+        <div style={{display:"flex",gap:6,marginBottom:24,flexWrap:"wrap"}}>
+          {SECTIONS.map((s,i) => <button key={i} onClick={()=>goToSection(i)} style={{...btnBase,padding:"6px 14px",background:i===currentSection?tc.accent:"transparent",border:`1px solid ${i===currentSection?tc.hi:tc.border}`,borderRadius:4,color:i===currentSection?"#fff":"#666",fontSize:12,transition:"all .3s"}}>{s.icon} {s.title}</button>)}
+        </div>
+        {/* Section info */}
+        <div style={{fontSize:12,color:"#555",letterSpacing:3,textTransform:"uppercase",marginBottom:4}}>Section {currentSection+1} of {SECTIONS.length}</div>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:28,fontWeight:700,color:tc.hi,marginBottom:6,transition:"color .5s"}}>{section.icon} {section.title}</h2>
+        <div style={{fontSize:13,color:"#555",marginBottom:30}}>Question {currentQ+1} of {section.questions.length} &bull; Score: {getScore(currentSection)}/{section.questions.filter((_,qi)=>answers[currentSection+"-"+qi]!==undefined).length}</div>
+        {/* Question card */}
+        <div style={{background:tc.card,border:`1px solid ${tc.border}`,borderRadius:8,padding:"28px 24px",marginBottom:20,transition:"all .5s",boxShadow:showResult&&!isCorrect?"0 0 30px rgba(139,0,0,.2)":"0 4px 20px rgba(0,0,0,.3)"}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:20,lineHeight:1.5,marginBottom:24,color:"#e8e8e0"}}>{section.questions[currentQ].q}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {section.questions[currentQ].options.map((opt,oi) => {
+              const isSel = selectedAnswer===oi, isAns = oi===section.questions[currentQ].answer;
+              let bg="rgba(255,255,255,.03)",bc="#333",tx="#ccc";
+              if (showResult) { if(isAns){bg="rgba(74,124,89,.2)";bc="#4a7c59";tx="#7cb87c"} else if(isSel&&!isAns){bg="rgba(139,0,0,.2)";bc="#8b0000";tx="#ff6666"} }
+              return <button key={oi} onClick={()=>handleAnswer(oi)} style={{...btnBase,width:"100%",padding:"14px 18px",background:bg,border:`1px solid ${bc}`,borderRadius:6,color:tx,fontSize:16,textAlign:"left",display:"flex",alignItems:"center",gap:12,transition:"all .3s",cursor:showResult?"default":"pointer"}} onMouseOver={e=>{if(!showResult)e.currentTarget.style.borderColor=tc.hi}} onMouseOut={e=>{if(!showResult)e.currentTarget.style.borderColor="#333"}}>
+                <span style={{width:28,height:28,minWidth:28,borderRadius:"50%",border:`1px solid ${bc}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:600,background:showResult&&isAns?"rgba(74,124,89,.3)":showResult&&isSel&&!isAns?"rgba(139,0,0,.3)":"transparent",color:tx}}>{String.fromCharCode(65+oi)}</span>
+                <span style={{flex:1}}>{opt}</span>
+                {showResult&&isAns&&<span style={{fontSize:18}}>&#10003;</span>}
+                {showResult&&isSel&&!isAns&&<span style={{fontSize:18}}>&#10007;</span>}
+              </button>;
+            })}
+          </div>
+          {showResult && <div style={{marginTop:20,padding:18,background:isCorrect?"rgba(74,124,89,.1)":"rgba(139,0,0,.1)",border:`1px solid ${isCorrect?'#2a4a30':'#4a1a1a'}`,borderRadius:6,animation:"slideUp .4s ease"}}>
+            <div style={{fontSize:13,fontWeight:700,letterSpacing:2,textTransform:"uppercase",color:isCorrect?"#7cb87c":"#ff6666",marginBottom:8}}>{isCorrect?"\u2713 Correct":"\u2717 Incorrect"}</div>
+            <div style={{fontSize:15,lineHeight:1.6,color:"#bbb"}}>{section.questions[currentQ].explanation}</div>
+          </div>}
+        </div>
+        {showResult && <button onClick={nextQuestion} style={{...btnBase,width:"100%",padding:"14px",background:`linear-gradient(135deg,${tc.accent},${hydeMode?'#4a0000':'#2a4a30'})`,border:`1px solid ${tc.hi}`,borderRadius:6,color:"#fff",fontSize:16,fontFamily:"'Playfair Display',serif",letterSpacing:1,transition:"all .3s"}} onMouseOver={e=>e.currentTarget.style.opacity=".85"} onMouseOut={e=>e.currentTarget.style.opacity="1"}>{currentQ<section.questions.length-1?"Next Question \u2192":currentSection<SECTIONS.length-1?`Continue to ${SECTIONS[currentSection+1].title} \u2192`:"View Final Results \u2192"}</button>}
+      </div>
+    </div>
+  );
+
+  // ── RESULTS ──
+  return (
+    <div style={{minHeight:"100vh",background:"#0d0f14",color:"#d4d8c8",fontFamily:"'Crimson Text',Georgia,serif",position:"relative",overflow:"hidden"}}>
+      <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,pointerEvents:"none",zIndex:0}}>
+        <div style={{position:"absolute",top:"-20%",left:"-10%",right:"-10%",height:"60%",background:"radial-gradient(ellipse at 30% 50%,rgba(74,124,89,.06) 0%,transparent 70%)",animation:"fogDrift 20s ease-in-out infinite",filter:"blur(40px)"}} />
+      </div>
+      <div style={{position:"relative",zIndex:1,maxWidth:800,margin:"0 auto",padding:"20px 16px 60px",animation:"slideUp .6s ease"}}>
+        <div style={{textAlign:"center",marginBottom:40}}>
+          <div style={{fontSize:13,letterSpacing:4,textTransform:"uppercase",color:"#666",marginBottom:16}}>{studentName&&`${studentName} \u2014 `}Diagnostic Results</div>
+          <h1 style={{fontFamily:"'UnifrakturMaguntia',cursive",fontSize:"clamp(32px,6vw,52px)",background:totalScore>=30?"linear-gradient(180deg,#7cb87c,#4a7c59)":totalScore>=20?"linear-gradient(180deg,#c9b06b,#8a7340)":"linear-gradient(180deg,#ff6666,#8b0000)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{totalScore} / {totalQuestions}</h1>
+          <div style={{fontSize:18,color:"#888",fontStyle:"italic",marginTop:8,fontFamily:"'Playfair Display',serif"}}>{totalScore>=35?"Exceptional \u2014 Jekyll\u2019s composure remains intact.":totalScore>=28?"Secure \u2014 but Hyde lurks in the margins.":totalScore>=20?"Developing \u2014 the potion is taking effect. Consult remedial notes.":"Priority \u2014 Hyde has taken control. Thorough revision needed."}</div>
+        </div>
+        {/* Section scores */}
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:40}}>
+          {SECTIONS.map((s,i) => {
+            const score=getScore(i),max=s.questions.length,pct=(score/max)*100;
+            const grade=pct>=80?"Secure":pct>=50?"Developing":"Priority";
+            const gc=pct>=80?"#7cb87c":pct>=50?"#c9b06b":"#ff6666";
+            return <div key={i} style={{background:"rgba(255,255,255,.03)",border:"1px solid #2a2a2a",borderRadius:8,padding:"16px 20px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,flexWrap:"wrap",gap:8}}>
+                <div><span style={{fontSize:18,marginRight:8}}>{s.icon}</span><span style={{fontFamily:"'Playfair Display',serif",fontSize:16,color:"#ccc"}}>{s.title}</span></div>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <span style={{fontSize:20,fontWeight:700,color:gc,fontFamily:"'Playfair Display',serif"}}>{score}/{max}</span>
+                  <span style={{padding:"3px 10px",background:gc+"22",border:`1px solid ${gc}44`,borderRadius:12,fontSize:11,color:gc,fontWeight:600,letterSpacing:1,textTransform:"uppercase"}}>{grade}</span>
+                </div>
+              </div>
+              <div style={{width:"100%",height:4,background:"#1a1a1a",borderRadius:2,overflow:"hidden"}}>
+                <div style={{width:pct+"%",height:"100%",background:`linear-gradient(90deg,${gc}88,${gc})`,borderRadius:2,transition:"width 1s"}} />
+              </div>
+              <div style={{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"}}>
+                <button onClick={()=>goToSection(i)} style={{...btnBase,padding:"6px 14px",background:"transparent",border:"1px solid #333",borderRadius:4,color:"#888",fontSize:12}}>Retake Section</button>
+                <button onClick={()=>toggleNotes(i)} style={{...btnBase,padding:"6px 14px",background:pct<70?"rgba(139,0,0,.2)":"transparent",border:`1px solid ${pct<70?'#5a1a1a':'#333'}`,borderRadius:4,color:pct<70?"#ff9999":"#888",fontSize:12}}>{showNotes[i]?"\u{1F4D6} Hide Notes \u25B2":"\u{1F4D6} Remedial Notes \u25BC"}</button>
+              </div>
+              {showNotes[i] && <div style={{marginTop:14,animation:"slideUp .4s ease"}}>
+                {s.notes.map((note,ni) => <div key={ni} style={{background:"rgba(0,0,0,.3)",border:"1px solid #2a2a2a",borderRadius:6,padding:16,marginBottom:10}}>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:15,fontWeight:700,color:"#c9b06b",marginBottom:12,borderBottom:"1px solid #2a2a2a",paddingBottom:8}}>{note.title}</div>
+                  {note.points.map((p,pi) => <div key={pi} style={{padding:"8px 0",borderBottom:pi<note.points.length-1?"1px solid #1a1a1a":"none",fontSize:14,lineHeight:1.65,color:p.startsWith("\u26A0")?"#ff9966":"#aaa"}}>{p}</div>)}
+                </div>)}
+              </div>}
+            </div>;
+          })}
+        </div>
+        <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+          <button onClick={resetQuiz} style={{...btnBase,padding:"14px 32px",background:"linear-gradient(135deg,#8b0000,#4a0000)",border:"1px solid #aa2222",borderRadius:6,color:"#e8c8c8",fontSize:16,fontFamily:"'Playfair Display',serif",letterSpacing:1}}>Restart Quiz</button>
+          <button onClick={toggleAllNotes} style={{...btnBase,padding:"14px 32px",background:"transparent",border:"1px solid #444",borderRadius:6,color:"#999",fontSize:16,fontFamily:"'Playfair Display',serif",letterSpacing:1}}>{SECTIONS.every((_,i)=>showNotes[i])?"\u{1F4D6} Hide All Notes":"\u{1F4D6} Show All Notes"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
