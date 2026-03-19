@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escape the Tomb of the Horatii</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a0a0f;
+    color: #e0d5c1;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Intro screen */
+  #intro-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at center, #1a1520 0%, #0a0a0f 70%);
+    text-align: center;
+    padding: 2rem;
+  }
+
+  #intro-screen h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.8rem;
+    color: #c9a84c;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(201, 168, 76, 0.3);
+  }
+
+  #intro-screen .subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: #8a7a5a;
+    margin-bottom: 2rem;
+  }
+
+  .story-text {
+    max-width: 600px;
+    line-height: 1.8;
+    font-size: 1.05rem;
+    color: #b8a88a;
+    margin-bottom: 2rem;
+  }
+
+  .start-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    padding: 1rem 3rem;
+    background: linear-gradient(135deg, #8b6914, #c9a84c);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: all 0.3s;
+  }
+
+  .start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(201, 168, 76, 0.4);
+  }
+
+  /* Main game */
+  #game-screen { display: none; }
+
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: #111118;
+    border-bottom: 2px solid #2a2530;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .timer {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    color: #c9a84c;
+  }
+
+  .timer.warning { color: #e84040; animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .progress-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .progress-door {
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.5s;
+  }
+
+  .progress-door.locked { background: #2a2530; color: #555; }
+  .progress-door.current { background: #3a2a10; color: #c9a84c; border: 2px solid #c9a84c; }
+  .progress-door.unlocked { background: #1a3a1a; color: #4caf50; }
+
+  .chamber-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .chamber {
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .chamber.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  .chamber-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    color: #c9a84c;
+    margin-bottom: 0.3rem;
+  }
+
+  .chamber-flavour {
+    color: #8a7a5a;
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .chamber-instruction {
+    background: #15151f;
+    border-left: 3px solid #c9a84c;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* Puzzle styles */
+  .puzzle-item {
+    background: #13131d;
+    border: 1px solid #2a2530;
+    border-radius: 6px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .puzzle-item .latin {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: #d4c4a0;
+    margin-bottom: 0.8rem;
+  }
+
+  .puzzle-item .hint {
+    font-size: 0.85rem;
+    color: #6a6a7a;
+    margin-bottom: 0.6rem;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .option-btn {
+    padding: 0.7rem 1rem;
+    background: #1e1e2e;
+    border: 1px solid #3a3a4a;
+    border-radius: 4px;
+    color: #c0b8a0;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .option-btn:hover { background: #2a2a3a; border-color: #c9a84c; }
+  .option-btn.correct { background: #1a3a1a; border-color: #4caf50; color: #4caf50; }
+  .option-btn.wrong { background: #3a1a1a; border-color: #e84040; color: #e84040; }
+  .option-btn.disabled { pointer-events: none; opacity: 0.6; }
+
+  .text-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .text-input-row input {
+    flex: 1;
+    padding: 0.7rem 1rem;
+    background: #1e1e2e;
+    border: 1px solid #3a3a4a;
+    border-radius: 4px;
+    color: #e0d5c1;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .text-input-row input:focus { outline: none; border-color: #c9a84c; }
+
+  .submit-btn {
+    padding: 0.7rem 1.5rem;
+    background: #c9a84c;
+    color: #0a0a0f;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+
+  .submit-btn:hover { background: #dab960; }
+
+  .check-chamber-btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #8b6914, #c9a84c);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+  }
+
+  .check-chamber-btn:hover { box-shadow: 0 0 20px rgba(201, 168, 76, 0.3); }
+  .check-chamber-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .feedback {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 4px;
+    display: none;
+    line-height: 1.6;
+  }
+
+  .feedback.success { display: block; background: #1a2e1a; border: 1px solid #2a5a2a; color: #7ecf7e; }
+  .feedback.error { display: block; background: #2e1a1a; border: 1px solid #5a2a2a; color: #cf7e7e; }
+
+  /* Maze (chamber 3) */
+  .maze-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    max-width: 700px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .maze-cell {
+    padding: 0.8rem 0.4rem;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .maze-cell.wall { background: #0e0e15; color: #333; cursor: default; }
+  .maze-cell.path { background: #1e1e2e; border: 1px solid #3a3a4a; color: #c0b8a0; }
+  .maze-cell.path:hover { border-color: #c9a84c; }
+  .maze-cell.visited { background: #1a3a1a; border-color: #4caf50; color: #4caf50; }
+  .maze-cell.wrong-path { background: #3a1a1a; border-color: #e84040; color: #e84040; }
+  .maze-cell.current { background: #3a2a10; border: 2px solid #c9a84c; color: #c9a84c; }
+  .maze-cell.start { background: #2a2040; border: 2px solid #9070d0; color: #9070d0; }
+  .maze-cell.end { background: #2a3a10; border: 2px solid #c9a84c; color: #c9a84c; }
+
+  .maze-cell .form { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1rem; }
+  .maze-cell .label { font-size: 0.7rem; margin-top: 2px; color: #6a6a7a; }
+
+  /* Victory screen */
+  #victory-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 2rem;
+    background: radial-gradient(ellipse at center, #1a2a1a 0%, #0a0a0f 70%);
+  }
+
+  #victory-screen h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    color: #4caf50;
+    margin-bottom: 1rem;
+  }
+
+  .final-time {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    color: #c9a84c;
+    margin-bottom: 2rem;
+  }
+
+  /* Defeat screen */
+  #defeat-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 2rem;
+    background: radial-gradient(ellipse at center, #2a1515 0%, #0a0a0f 70%);
+  }
+
+  #defeat-screen h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.5rem;
+    color: #e84040;
+    margin-bottom: 1rem;
+  }
+
+  .score-summary {
+    max-width: 400px;
+    margin: 1rem auto;
+  }
+
+  .score-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #2a2530;
+  }
+
+  .score-row .label { color: #8a7a5a; }
+  .score-row .value { color: #c9a84c; font-weight: 600; }
+
+  @media (max-width: 600px) {
+    #intro-screen h1 { font-size: 1.8rem; }
+    .options-grid { grid-template-columns: 1fr; }
+    .maze-grid { grid-template-columns: repeat(6, 1fr); gap: 3px; }
+    .maze-cell { font-size: 0.7rem; padding: 0.3rem 0.1rem; min-height: 45px; }
+    .maze-cell .form { font-size: 0.8rem; }
+    .maze-cell .label { font-size: 0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro-screen">
+  <h1>Escape the Tomb of the Horatii</h1>
+  <p class="subtitle">A Latin Grammar Escape Room</p>
+  <p class="story-text">
+    You are trapped in the ancient tomb beneath the <em>tigillum sororium</em>.
+    Five chambers stand between you and freedom. Each door is sealed with a Latin puzzle
+    drawn from the grammar of Unit 18. Solve all five to escape before the torches burn out.
+  </p>
+  <p class="story-text" style="font-size:0.9rem; color:#6a5a4a;">
+    You have <strong style="color:#c9a84c;">25 minutes</strong>. Work together. Think carefully.
+    The dead do not give second chances.
+  </p>
+  <button class="start-btn" onclick="startGame()">Enter the Tomb</button>
+</div>
+
+<!-- GAME -->
+<div id="game-screen">
+  <div class="game-header">
+    <div class="timer" id="timer">25:00</div>
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <div class="chamber-container" id="chambers"></div>
+  <!-- Teacher skip controls — remove before giving to students -->
+  <div id="teacher-skip" style="position:fixed;bottom:10px;right:10px;background:#1a1a2a;border:1px solid #c9a84c;border-radius:6px;padding:8px 12px;font-size:0.8rem;z-index:999;">
+    <span style="color:#c9a84c;margin-right:6px;">Skip to:</span>
+    <button onclick="skipTo(0)" style="all:unset;color:#aaa;cursor:pointer;margin:0 4px;">1</button>
+    <button onclick="skipTo(1)" style="all:unset;color:#aaa;cursor:pointer;margin:0 4px;">2</button>
+    <button onclick="skipTo(2)" style="all:unset;color:#aaa;cursor:pointer;margin:0 4px;">3</button>
+    <button onclick="skipTo(3)" style="all:unset;color:#aaa;cursor:pointer;margin:0 4px;">4</button>
+    <button onclick="skipTo(4)" style="all:unset;color:#aaa;cursor:pointer;margin:0 4px;">5</button>
+    <button onclick="document.getElementById('teacher-skip').style.display='none'" style="all:unset;color:#555;cursor:pointer;margin-left:10px;">✕</button>
+  </div>
+</div>
+
+<!-- VICTORY -->
+<div id="victory-screen">
+  <h1>You Escaped!</h1>
+  <p class="story-text">The final door swings open and daylight floods in. The tomb of the Horatii releases you — this time.</p>
+  <p class="final-time" id="final-time"></p>
+  <div class="score-summary" id="score-summary"></div>
+  <div style="margin-top:2rem;text-align:center;">
+    <p style="color:#8a7a5a;margin-bottom:0.8rem;">You've earned your freedom. But can you survive what comes next?</p>
+    <a href="https://mrbeasley930-ai.github.io/Vesuvius/" target="_blank" class="start-btn" style="display:inline-block;text-decoration:none;background:linear-gradient(135deg,#8b2020,#c94040);">Play Vesuvius Grammatica</a>
+  </div>
+  <button class="start-btn" style="margin-top:1rem;background:linear-gradient(135deg,#333,#555);font-size:0.9rem;padding:0.7rem 2rem;" onclick="location.reload()">Play Escape Room Again</button>
+</div>
+
+<!-- DEFEAT -->
+<div id="defeat-screen">
+  <h1>The Torches Died</h1>
+  <p class="story-text">Darkness swallows you. The tomb of the Horatii claims another soul. Perhaps next time you will conjugate faster...</p>
+  <div class="score-summary" id="defeat-summary"></div>
+  <button class="start-btn" style="margin-top:2rem; background: linear-gradient(135deg, #8b2020, #c04040);" onclick="location.reload()">Try Again</button>
+</div>
+
+<script>
+// ============= GAME DATA =============
+
+const chambers = [
+  {
+    id: 1,
+    title: "Chamber I: The Future Gate",
+    flavour: "An inscription gleams on the bronze door: 'Only those who can see what is to come may pass.' Eight runes must be lit. The future tense holds the key.",
+    instruction: "Select the correct answer for each question to light a rune. You must light all eight to open the door. Be careful — some questions are trickier than they look.",
+    type: "multiple-choice",
+    puzzles: [
+      { latin: "mittent", hint: "mittō, mittere — 3rd conjugation. What does this form mean?", options: ["they sent", "they send", "they will send", "they were sending"], answer: 2 },
+      { latin: "capiet", hint: "capiō, capere — mixed conjugation. What does this form mean?", options: ["he will take", "he takes", "he took", "he was taking"], answer: 0 },
+      { latin: "audiam", hint: "audiō, audīre — 4th conjugation. What does this form mean?", options: ["I was hearing", "I hear", "I heard", "I will hear"], answer: 3 },
+      { latin: "Which is the future of vincō (3rd conj., 'we')?", hint: "Think: what marker does the future use in 3rd conjugation?", options: ["vincēmus", "vincāmus", "vincīmus", "vincēbāmus"], answer: 0 },
+      { latin: "Which of these is NOT a future tense form?", hint: "One of these is an imposter — a different tense hiding among futures.", options: ["regent", "audiēs", "curret", "docēbat"], answer: 3 },
+      { latin: "redībunt", hint: "redeō, redīre — compound of eō. What does this form mean?", options: ["they returned", "they return", "they will return", "they were returning"], answer: 2 },
+      { latin: "What is the future of faciō (mixed conj., 'they')?", hint: "faciō follows the same pattern as capiō in the future.", options: ["facient", "faciēbant", "faciant", "fēcērunt"], answer: 0 },
+      { latin: "puniēmus", hint: "pūniō, pūnīre — 4th conjugation. What does this form mean?", options: ["we punish", "we punished", "we were punishing", "we will punish"], answer: 3 },
+    ]
+  },
+  {
+    id: 2,
+    title: "Chamber II: The Mixed Grammar Lock",
+    flavour: "Five inscriptions are carved into the wall — each uses a different piece of Unit 18 grammar. Translate them all to release the bolt.",
+    instruction: "Translate each Latin sentence into English. The tomb checks meaning, not exact wording — any reasonable translation will work. All vocabulary is from the Defined Vocabulary List.",
+    type: "semantic-translation",
+    puzzles: [
+      {
+        latin: "mīlitēs crās ad urbem ībunt ut hostēs vincant.",
+        hint: "future of eō + purpose clause (ut + subjunctive). All DVL vocab.",
+        required: [
+          ["soldier", "soldiers", "warriors"],
+          ["tomorrow"],
+          ["city", "town"],
+          ["go", "march", "travel", "will go"],
+          ["enemy", "enemies", "foe", "foes"],
+          ["conquer", "defeat", "overcome", "beat", "win"]
+        ],
+        reject: [],
+        sampleAnswer: "Tomorrow the soldiers will go to the city to conquer the enemies."
+      },
+      {
+        latin: "necesse erat patrī fīliam servāre nē ea in perīculum caderet.",
+        hint: "necesse erat + dative + infinitive + nē purpose clause. DVL: servō = save/look after; cadō = fall.",
+        required: [
+          ["necessary", "must", "had to", "need"],
+          ["father"],
+          ["daughter"],
+          ["save", "protect", "look after", "guard", "keep safe"],
+          ["danger", "peril"],
+          ["fall", "fell"]
+        ],
+        reject: [],
+        sampleAnswer: "It was necessary for the father to save his daughter lest she fall into danger."
+      },
+      {
+        latin: "placuitne tibi frātrēs nostrōs prō patriā pugnāre?",
+        hint: "placuit (perfect of placet) + dative + infinitive. Note -ne question marker.",
+        required: [
+          ["please", "pleased", "pleasing", "like", "liked", "glad", "happy"],
+          ["you", "your"],
+          ["brother", "brothers"],
+          ["country", "fatherland", "homeland", "nation"],
+          ["fight", "fought", "fighting"]
+        ],
+        reject: [],
+        mustBeQuestion: true,
+        sampleAnswer: "Did it please you that our brothers fought for the fatherland?"
+      },
+      {
+        latin: "senex ad forum abiit sed iuvenēs domī mānsērunt.",
+        hint: "abiit = he went away (compound of eō). domī = at home. DVL: senex, iuvenis, forum, maneō.",
+        required: [
+          ["old man", "old", "elder", "elderly"],
+          ["forum", "market"],
+          ["went away", "departed", "left", "went off", "went out"],
+          ["young", "youths", "young men"],
+          ["home"],
+          ["remained", "stayed", "remain", "stay"]
+        ],
+        reject: [],
+        sampleAnswer: "The old man went away to the forum but the young men stayed at home."
+      },
+      {
+        latin: "rēx timēbat nē cīvēs sē interficerent.",
+        hint: "Fear clause: timeō nē = I fear that... DVL: rēx, timeō, cīvis, interficiō.",
+        required: [
+          ["king"],
+          ["fear", "feared", "afraid", "fearing", "anxious", "worried"],
+          ["citizen", "citizens", "people"],
+          ["kill", "killed", "murder", "murdered", "slay", "slew"]
+        ],
+        reject: [],
+        sampleAnswer: "The king feared that the citizens would kill him."
+      },
+    ]
+  },
+  {
+    id: 3,
+    title: "Chamber III: The Path of eō",
+    flavour: "The floor is a grid of stepping stones. Each bears a Latin verb form. Only forms of eō and its compounds (abeō, adeō, redeō, exeō, ineō, trānseō) create a safe path. Many traps look deceptively similar...",
+    instruction: "Navigate from START to EXIT by clicking only genuine forms of eō and its compounds. Move right or down. Wrong steps reset you to the start. Warning: forms like 'erit' (sum), 'init' (incipiō), and 'eat' (edō) are NOT eō!",
+    type: "maze",
+    gridCols: 6,
+    grid: [
+      // Row 0
+      { form: "START", label: "", correct: true, isStart: true },
+      { form: "eunt", label: "pres. 3pl", correct: true },
+      { form: "erit", label: "fut. of sum?", correct: false },
+      { form: "erunt", label: "fut. of sum?", correct: false },
+      { form: "erat", label: "sum imperf 3sg", correct: false },
+      { form: "init", label: "inīre? incipiō?", correct: false },
+      // Row 1
+      { form: "erant", label: "sum imperf", correct: false },
+      { form: "iit", label: "perf. 3sg", correct: true },
+      { form: "ibant", label: "imperf. 3pl", correct: true },
+      { form: "ierit", label: "sum fut perf?", correct: false },
+      { form: "redit", label: "redeō pres", correct: true },
+      { form: "vēnit", label: "veniō?", correct: false },
+      // Row 2
+      { form: "iēcit", label: "iaciō perf?", correct: false },
+      { form: "abiit", label: "abeō perf", correct: true },
+      { form: "exstat", label: "exstō? existō?", correct: false },
+      { form: "ībat", label: "imperf. 3sg", correct: true },
+      { form: "exiit", label: "exeō perf", correct: true },
+      { form: "incipit", label: "incipiō?", correct: false },
+      // Row 3
+      { form: "adest", label: "adsum?", correct: false },
+      { form: "adit", label: "adeō pres", correct: true },
+      { form: "iērunt", label: "perf. 3pl", correct: true },
+      { form: "ēgit", label: "agō perf?", correct: false },
+      { form: "trānsiit", label: "trānseō perf", correct: true },
+      { form: "audit", label: "audiō?", correct: false },
+      // Row 4
+      { form: "erāmus", label: "sum imperf?", correct: false },
+      { form: "ēmit", label: "emō perf?", correct: false },
+      { form: "adeunt", label: "adeō pres 3pl", correct: true },
+      { form: "redībunt", label: "redeō fut", correct: true },
+      { form: "emit", label: "emō?", correct: false },
+      { form: "rediit", label: "redeō perf", correct: true },
+      // Row 5
+      { form: "fuērunt", label: "sum perf 3pl?", correct: false },
+      { form: "fuit", label: "sum perf?", correct: false },
+      { form: "ībō", label: "fut. 1sg", correct: true },
+      { form: "ībunt", label: "fut. 3pl", correct: true },
+      { form: "iniit", label: "ineō perf", correct: true },
+      { form: "EXIT", label: "", correct: true, isEnd: true },
+    ],
+    correctPath: [0, 1, 7, 13, 19, 20, 26, 27, 33, 34, 35]
+  },
+  {
+    id: 4,
+    title: "Chamber IV: The Purpose Chamber",
+    flavour: "Four sentences are carved into pillars around the room. Each contains a purpose clause — but the key word is missing. Supply the correct word to complete each clause.",
+    instruction: "Each sentence has a gap where ut or nē should go. Choose the correct word AND translate the purpose clause to unlock the pillar.",
+    type: "purpose-clause",
+    puzzles: [
+      {
+        before: "pater pecūniam dedit ", gap: true, after: " fīlius cum honōre vīveret.",
+        utOrNe: "ut",
+        translation: ["so that his son would live with honour", "so that his son might live with honour", "in order that his son might live with honour", "so that his son could live with honour", "in order for his son to live with honour", "to allow his son to live with honour", "so his son would live with honour", "so his son might live with honour"],
+        hint: "Positive purpose — the father wants something to happen."
+      },
+      {
+        before: "mīlitēs mūrōs aedificāvērunt ", gap: true, after: " hostēs urbem caperent.",
+        utOrNe: "nē",
+        translation: ["so that the enemies would not capture the city", "lest the enemies capture the city", "so that the enemies might not take the city", "lest the enemies should capture the city", "so that the enemies might not capture the city", "lest the enemy capture the city", "lest the enemy captured the city", "so that the enemy would not capture the city", "so that the enemy would not take the city", "so that the enemy might not seize the city", "lest the enemies seize the city", "so that the enemies could not take the city"],
+        hint: "Negative purpose — the soldiers want to prevent something."
+      },
+      {
+        before: "Horatia in hortō mānsit ", gap: true, after: " lacrimās suās pater vidēret.",
+        utOrNe: "nē",
+        translation: ["so that her father would not see her tears", "lest her father see her tears", "so that her father might not see her tears", "lest her father should see her tears", "so her father would not see her tears", "so that the father would not see her tears", "lest the father see her tears", "so that her father could not see her tears", "in case her father saw her tears"],
+        hint: "Negative purpose — Horatia is hiding something."
+      },
+      {
+        before: "cīvēs ad forum cucurrērunt ", gap: true, after: " senātōrem audīrent.",
+        utOrNe: "ut",
+        translation: ["so that they might hear the senator", "in order to hear the senator", "so that they would hear the senator", "in order that they might hear the senator", "to hear the senator", "so that they could hear the senator", "to listen to the senator", "so that they might listen to the senator", "in order to listen to the senator"],
+        hint: "Positive purpose — they went with a goal."
+      },
+    ]
+  },
+  {
+    id: 5,
+    title: "Chamber V: The Final Door",
+    flavour: "The last door is sealed with ancient magic. A continuous Latin passage is carved into the stone — the story of the tomb itself. Translate each section to break the seal. But beware: one wrong answer and the tomb drags you back to Chamber II. There are no second chances here.",
+    instruction: "Translate each section of the passage. The tomb checks your meaning, not your exact words. You must get at least 4 out of 5 correct. ONE WRONG ANSWER SENDS YOU BACK TO CHAMBER II.",
+    type: "final-translation",
+    penalty: true,
+    puzzles: [
+      {
+        latin: "post proelium, necesse erat Horātiō ad urbem redīre ut praemium acciperet.",
+        vocab: "post + acc = after; proelium = battle; praemium = prize/reward; accipiō = I receive",
+        required: [
+          ["after"],
+          ["battle", "fight"],
+          ["necessary", "must", "had to", "need"],
+          ["horatius"],
+          ["city", "town"],
+          ["return", "go back", "come back"],
+          ["prize", "reward", "praemium"],
+          ["receive", "accept", "collect", "get", "claim"]
+        ],
+        reject: [],
+        sampleAnswer: "After the battle, it was necessary for Horatius to return to the city to receive his reward."
+      },
+      {
+        latin: "sed soror eius ad portam cucurrit nē frāter sine lacrimīs intrāret.",
+        vocab: "eius = his; porta = gate; lacrimae = tears; intrō = I enter",
+        required: [
+          ["sister"],
+          ["gate", "door"],
+          ["ran", "hurried", "rushed"],
+          ["brother"],
+          ["without"],
+          ["tears", "crying", "weeping"],
+          ["enter", "go in", "come in", "entered", "entering"]
+        ],
+        reject: [],
+        sampleAnswer: "But his sister ran to the gate lest her brother enter without tears."
+      },
+      {
+        latin: "Horātius, quod īrātus erat, gladium cēpit. placuitne deīs eum sorōrem necāre?",
+        vocab: "gladius = sword; cēpit (from capiō) = seized; sōror = sister; necō = I kill",
+        required: [
+          ["horatius"],
+          ["angry"],
+          ["sword"],
+          ["seized", "took", "grabbed", "picked up", "drew"],
+          ["please", "pleased", "pleasing"],
+          ["god", "gods"],
+          ["sister"],
+          ["kill", "killed", "slay", "murder"]
+        ],
+        reject: [],
+        mustBeQuestion: true,
+        sampleAnswer: "Horatius, because he was angry, seized his sword. Did it please the gods for him to kill his sister?"
+      },
+      {
+        latin: "pater timēbat nē fīlius poenas daret. cīvēs enim ad forum iērunt ut dē scelere audīrent.",
+        vocab: "poenās dō = I pay the penalty; enim = for; scelus = crime; dē + abl = about",
+        required: [
+          ["father"],
+          ["fear", "feared", "afraid"],
+          ["son"],
+          ["penalty", "punishment", "punish", "punished", "pay the penalty", "pay"],
+          ["citizen", "citizens", "people"],
+          ["forum"],
+          ["went", "go"],
+          ["crime", "offence", "deed"],
+          ["hear", "listen", "heard"]
+        ],
+        reject: [],
+        sampleAnswer: "The father feared that his son would pay the penalty. For the citizens went to the forum to hear about the crime."
+      },
+      {
+        latin: "tandem senātōrēs cōnstitūērunt necesse esse Horātium sacra perficere nē deī urbem pūnīrent.",
+        vocab: "tandem = at last; cōnstituō = I decide; sacra = sacred rites; perficiō = I carry out; pūniō = I punish",
+        required: [
+          ["at last", "finally", "at length", "in the end"],
+          ["senator", "senators"],
+          ["decided", "decided that", "decreed", "resolved", "determined"],
+          ["necessary", "must", "had to", "need"],
+          ["horatius"],
+          ["sacred", "rites", "rituals", "holy"],
+          ["carry out", "perform", "complete", "carried out", "performed"],
+          ["god", "gods"],
+          ["city", "town"],
+          ["punish", "punished", "punishing", "destroy"]
+        ],
+        reject: [],
+        sampleAnswer: "At last the senators decided that it was necessary for Horatius to carry out the sacred rites lest the gods punish the city."
+      },
+    ]
+  }
+];
+
+// ============= GAME STATE =============
+let currentChamber = 0;
+let timerInterval = null;
+let timeLeft = 25 * 60; // 25 minutes
+let chamberScores = [0, 0, 0, 0, 0];
+let chamberTotals = [8, 5, 1, 4, 5]; // total possible per chamber
+let startTime = null;
+
+// Maze state
+let mazeVisited = [];
+let mazeCurrentIndex = 0;
+
+// ============= GAME FUNCTIONS =============
+
+function startGame() {
+  document.getElementById('intro-screen').style.display = 'none';
+  document.getElementById('game-screen').style.display = 'block';
+  startTime = Date.now();
+  buildProgressBar();
+  buildAllChambers();
+  showChamber(0);
+  startTimer();
+}
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerDisplay();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      showDefeat();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  const el = document.getElementById('timer');
+  el.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  if (timeLeft < 120) el.classList.add('warning');
+  else el.classList.remove('warning');
+}
+
+function buildProgressBar() {
+  const bar = document.getElementById('progress-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const door = document.createElement('div');
+    door.className = `progress-door ${i === 0 ? 'current' : 'locked'}`;
+    door.id = `door-${i}`;
+    door.textContent = i === 0 ? '🔓' : '🔒';
+    bar.appendChild(door);
+  }
+}
+
+function updateProgress(chamberIndex) {
+  for (let i = 0; i < 5; i++) {
+    const door = document.getElementById(`door-${i}`);
+    if (i < chamberIndex) {
+      door.className = 'progress-door unlocked';
+      door.textContent = '✓';
+    } else if (i === chamberIndex) {
+      door.className = 'progress-door current';
+      door.textContent = '🔓';
+    } else {
+      door.className = 'progress-door locked';
+      door.textContent = '🔒';
+    }
+  }
+}
+
+function buildAllChambers() {
+  const container = document.getElementById('chambers');
+  container.innerHTML = '';
+  chambers.forEach((ch, idx) => {
+    const div = document.createElement('div');
+    div.className = 'chamber';
+    div.id = `chamber-${idx}`;
+    div.innerHTML = buildChamberHTML(ch, idx);
+    container.appendChild(div);
+  });
+}
+
+function buildChamberHTML(ch, idx) {
+  let html = `
+    <h2 class="chamber-title">${ch.title}</h2>
+    <p class="chamber-flavour">${ch.flavour}</p>
+    <div class="chamber-instruction">${ch.instruction}</div>
+  `;
+
+  if (ch.type === 'multiple-choice') {
+    ch.puzzles.forEach((p, pi) => {
+      html += `
+        <div class="puzzle-item" id="mc-${idx}-${pi}">
+          <div class="latin">${p.latin}</div>
+          <div class="hint">${p.hint}</div>
+          <div class="options-grid">
+            ${p.options.map((opt, oi) => `<button class="option-btn" onclick="checkMC(${idx},${pi},${oi})">${opt}</button>`).join('')}
+          </div>
+        </div>`;
+    });
+    html += `<div class="feedback" id="feedback-${idx}"></div>`;
+    html += `<button class="check-chamber-btn" id="advance-${idx}" style="display:none" onclick="advanceChamber(${idx})">Open the Door →</button>`;
+  }
+
+  else if (ch.type === 'translation' || ch.type === 'semantic-translation') {
+    ch.puzzles.forEach((p, pi) => {
+      html += `
+        <div class="puzzle-item" id="trans-${idx}-${pi}">
+          <div class="latin">${p.latin}</div>
+          <div class="hint">${p.hint}</div>
+          <div class="text-input-row">
+            <input type="text" id="input-${idx}-${pi}" placeholder="Type your translation..." onkeydown="if(event.key==='Enter')checkTranslation(${idx},${pi})">
+            <button class="submit-btn" onclick="checkTranslation(${idx},${pi})">Check</button>
+          </div>
+          <div class="feedback" id="tfeedback-${idx}-${pi}"></div>
+        </div>`;
+    });
+    html += `<div class="feedback" id="feedback-${idx}"></div>`;
+    html += `<button class="check-chamber-btn" id="advance-${idx}" style="display:none" onclick="advanceChamber(${idx})">Open the Door →</button>`;
+  }
+
+  else if (ch.type === 'maze') {
+    html += `<div class="maze-grid" id="maze-grid">`;
+    ch.grid.forEach((cell, ci) => {
+      const cls = cell.isStart ? 'maze-cell start current' : cell.isEnd ? 'maze-cell end' : 'maze-cell path';
+      html += `<div class="${cls}" id="maze-${ci}" onclick="clickMaze(${ci})">
+        <span class="form">${cell.form}</span>
+        ${cell.label ? `<span class="label">${cell.isStart || cell.isEnd ? '' : cell.label}</span>` : ''}
+      </div>`;
+    });
+    html += `</div>`;
+    html += `<div class="feedback" id="feedback-${idx}"></div>`;
+    html += `<button class="check-chamber-btn" id="advance-${idx}" style="display:none" onclick="advanceChamber(${idx})">Open the Door →</button>`;
+  }
+
+  else if (ch.type === 'purpose-clause') {
+    ch.puzzles.forEach((p, pi) => {
+      html += `
+        <div class="puzzle-item" id="pc-${idx}-${pi}">
+          <div class="latin">${p.before}<strong style="color:#c9a84c; font-size:1.3rem;">______</strong>${p.after}</div>
+          <div class="hint">${p.hint}</div>
+          <div style="margin-bottom:0.5rem;">
+            <span style="color:#8a7a5a; font-size:0.9rem;">Fill the gap:</span>
+            <button class="option-btn" style="display:inline; width:auto; margin:0 4px;" onclick="selectUtNe(${idx},${pi},'ut',this)">ut</button>
+            <button class="option-btn" style="display:inline; width:auto; margin:0 4px;" onclick="selectUtNe(${idx},${pi},'nē',this)">nē</button>
+          </div>
+          <div style="margin-top:0.5rem;">
+            <span style="color:#8a7a5a; font-size:0.9rem;">Translate the purpose clause:</span>
+            <div class="text-input-row" style="margin-top:4px;">
+              <input type="text" id="pcinput-${idx}-${pi}" placeholder="e.g. so that..." onkeydown="if(event.key==='Enter')checkPurpose(${idx},${pi})">
+              <button class="submit-btn" onclick="checkPurpose(${idx},${pi})">Check</button>
+            </div>
+          </div>
+          <div class="feedback" id="pcfeedback-${idx}-${pi}"></div>
+        </div>`;
+    });
+    html += `<div class="feedback" id="feedback-${idx}"></div>`;
+    html += `<button class="check-chamber-btn" id="advance-${idx}" style="display:none" onclick="advanceChamber(${idx})">Open the Door →</button>`;
+  }
+
+  else if (ch.type === 'final-translation') {
+    ch.puzzles.forEach((p, pi) => {
+      html += `
+        <div class="puzzle-item" id="ft-${idx}-${pi}">
+          <div class="latin">${p.latin}</div>
+          <div class="hint">${p.vocab}</div>
+          <div class="text-input-row">
+            <input type="text" id="input-${idx}-${pi}" placeholder="Translate..." onkeydown="if(event.key==='Enter')checkFinal(${idx},${pi})">
+            <button class="submit-btn" onclick="checkFinal(${idx},${pi})">Check</button>
+          </div>
+          <div class="feedback" id="ftfeedback-${idx}-${pi}"></div>
+        </div>`;
+    });
+    html += `<div class="feedback" id="feedback-${idx}"></div>`;
+    html += `<button class="check-chamber-btn" id="advance-${idx}" style="display:none" onclick="advanceChamber(${idx})">Open the Final Door →</button>`;
+  }
+
+  return html;
+}
+
+function showChamber(idx) {
+  document.querySelectorAll('.chamber').forEach(c => c.classList.remove('active'));
+  document.getElementById(`chamber-${idx}`).classList.add('active');
+  currentChamber = idx;
+  updateProgress(idx);
+
+  if (idx === 2) { // maze
+    mazeVisited = [0];
+    mazeCurrentIndex = 0;
+  }
+}
+
+// ===== Multiple Choice =====
+let mcAnswered = {};
+function checkMC(chamberIdx, puzzleIdx, optionIdx) {
+  const key = `${chamberIdx}-${puzzleIdx}`;
+  if (mcAnswered[key]) return;
+  mcAnswered[key] = true;
+
+  const puzzle = chambers[chamberIdx].puzzles[puzzleIdx];
+  const item = document.getElementById(`mc-${chamberIdx}-${puzzleIdx}`);
+  const buttons = item.querySelectorAll('.option-btn');
+
+  buttons.forEach((b, i) => {
+    b.classList.add('disabled');
+    if (i === puzzle.answer) b.classList.add('correct');
+    else if (i === optionIdx) b.classList.add('wrong');
+  });
+
+  if (optionIdx === puzzle.answer) {
+    chamberScores[chamberIdx]++;
+  }
+
+  // Check if all answered
+  const total = chambers[chamberIdx].puzzles.length;
+  const answered = Object.keys(mcAnswered).filter(k => k.startsWith(`${chamberIdx}-`)).length;
+  if (answered >= total) {
+    showChamberResult(chamberIdx);
+  }
+}
+
+// ===== Translation =====
+let transAnswered = {};
+function checkTranslation(chamberIdx, puzzleIdx) {
+  const key = `${chamberIdx}-${puzzleIdx}`;
+  if (transAnswered[key]) return;
+
+  const input = document.getElementById(`input-${chamberIdx}-${puzzleIdx}`);
+  const userAnswer = input.value.trim().toLowerCase().replace(/[.,!?;:'"]/g, '');
+  const puzzle = chambers[chamberIdx].puzzles[puzzleIdx];
+  const fb = document.getElementById(`tfeedback-${chamberIdx}-${puzzleIdx}`);
+  const chamberType = chambers[chamberIdx].type;
+
+  let isCorrect = false;
+  let missingConcepts = [];
+
+  if (chamberType === 'semantic-translation') {
+    // Semantic checking: does the answer contain the required concepts?
+    const result = semanticCheck(userAnswer, puzzle);
+    isCorrect = result.pass;
+    missingConcepts = result.missing;
+
+    // Also check for reject words
+    if (puzzle.reject && puzzle.reject.length > 0) {
+      const hasReject = puzzle.reject.some(r => userAnswer.includes(r));
+      if (hasReject) isCorrect = false;
+    }
+
+    // Check if it should be a question
+    if (puzzle.mustBeQuestion) {
+      const rawInput = input.value.trim();
+      // Accept if the raw input ends with ? OR if the meaning is right (they might just forget the ?)
+      // Don't penalise missing ? if the meaning is correct
+    }
+  } else {
+    // Legacy exact matching
+    isCorrect = puzzle.answer.some(a => fuzzyMatch(userAnswer, a.toLowerCase()));
+  }
+
+  if (isCorrect) {
+    fb.className = 'feedback success';
+    fb.textContent = '✓ The dial clicks into place!';
+    fb.style.display = 'block';
+    input.disabled = true;
+    input.style.borderColor = '#4caf50';
+    chamberScores[chamberIdx]++;
+    transAnswered[key] = true;
+  } else {
+    fb.className = 'feedback error';
+    if (chamberType === 'semantic-translation' && missingConcepts.length > 0) {
+      const hints = missingConcepts.map(group => {
+        // Give a generic hint about what concept is missing
+        if (group.some(w => ['necessary','must','need','have to','essential','had to'].includes(w))) return 'the idea of necessity';
+        if (group.some(w => ['please','pleasing','like','pleased','glad','happy','liked'].includes(w))) return 'the idea of pleasing';
+        if (group.some(w => ['fear','feared','afraid'].includes(w))) return 'the emotion';
+        if (group.some(w => ['soldier','soldiers'].includes(w))) return 'who is acting';
+        if (group.some(w => ['father'].includes(w))) return 'a family member';
+        if (group.some(w => ['daughter'].includes(w))) return 'a family member';
+        if (group.some(w => ['brother','brothers'].includes(w))) return 'a family member';
+        if (group.some(w => ['king'].includes(w))) return 'a key person';
+        if (group.some(w => ['old man','old','elder'].includes(w))) return 'who is acting';
+        if (group.some(w => ['young','youths'].includes(w))) return 'another group of people';
+        if (group.some(w => ['citizen','citizens','people'].includes(w))) return 'who is involved';
+        if (group.some(w => ['enemy','enemies'].includes(w))) return 'who they are acting against';
+        if (group.some(w => ['city','town'].includes(w))) return 'a place';
+        if (group.some(w => ['forum','market'].includes(w))) return 'a place';
+        if (group.some(w => ['home'].includes(w))) return 'a place';
+        if (group.some(w => ['country','fatherland','homeland'].includes(w))) return 'what they fight for';
+        if (group.some(w => ['tomorrow'].includes(w))) return 'when it happens';
+        if (group.some(w => ['go','march','will go'].includes(w))) return 'a key verb (movement)';
+        if (group.some(w => ['went away','departed','left'].includes(w))) return 'a key verb (movement)';
+        if (group.some(w => ['remained','stayed'].includes(w))) return 'a key verb';
+        if (group.some(w => ['conquer','defeat','overcome'].includes(w))) return 'what they aim to do';
+        if (group.some(w => ['fight','fought','fighting'].includes(w))) return 'a key verb';
+        if (group.some(w => ['save','protect'].includes(w))) return 'a key verb';
+        if (group.some(w => ['kill','killed','murder'].includes(w))) return 'a key verb';
+        if (group.some(w => ['danger','peril'].includes(w))) return 'what is at risk';
+        if (group.some(w => ['fall','fell'].includes(w))) return 'a key verb';
+        if (group.some(w => ['you','your'].includes(w))) return 'who it applies to';
+        if (group.some(w => ['us','we','our'].includes(w))) return 'who it applies to';
+        return 'a key concept';
+      });
+      fb.textContent = `Close, but you're missing: ${hints.join(', ')}. Try again.`;
+    } else {
+      fb.textContent = 'Not quite — check your translation and try again.';
+    }
+    fb.style.display = 'block';
+    if (!transAnswered[key + '-attempts']) transAnswered[key + '-attempts'] = 0;
+    transAnswered[key + '-attempts']++;
+    if (transAnswered[key + '-attempts'] >= 3) {
+      fb.textContent = `The tomb accepts: "${puzzle.sampleAnswer || puzzle.answer[0]}"`;
+      input.disabled = true;
+      transAnswered[key] = true;
+    }
+  }
+
+  const total = chambers[chamberIdx].puzzles.length;
+  const done = Object.keys(transAnswered).filter(k => k.startsWith(`${chamberIdx}-`) && !k.includes('attempts')).length;
+  if (done >= total) {
+    showChamberResult(chamberIdx);
+  }
+}
+
+function semanticCheck(userStr, puzzle) {
+  const missing = [];
+
+  for (const group of puzzle.required) {
+    // Check if ANY keyword from this concept group appears in the user's answer
+    // Use multiple matching strategies for flexibility
+    const found = group.some(keyword => {
+      // Direct substring (handles "displeased" matching "displease", "citizens" matching "citizen")
+      if (userStr.includes(keyword)) return true;
+      // Check if any word in the answer stems to match any keyword
+      const words = userStr.split(/\s+/);
+      return words.some(w => {
+        // Exact match
+        if (w === keyword) return true;
+        // Substring either way
+        if (w.includes(keyword) || keyword.includes(w)) return true;
+        // Stem comparison: strip common endings and compare roots
+        const wStem = stemWord(w);
+        const kStem = stemWord(keyword);
+        if (wStem.length >= 3 && kStem.length >= 3 && (wStem === kStem || wStem.includes(kStem) || kStem.includes(wStem))) return true;
+        return false;
+      });
+    });
+    if (!found) {
+      missing.push(group);
+    }
+  }
+
+  return { pass: missing.length === 0, missing };
+}
+
+function stemWord(w) {
+  // Simple English stemmer — strip common suffixes to get root
+  return w
+    .replace(/ying$/, 'y')
+    .replace(/ied$/, 'y')
+    .replace(/ies$/, 'y')
+    .replace(/ught$/, '') // fought -> fo, caught -> ca — too aggressive
+    .replace(/ing$/, '')
+    .replace(/ed$/, '')
+    .replace(/es$/, '')
+    .replace(/s$/, '')
+    .replace(/ly$/, '')
+    .replace(/ment$/, '')
+    .replace(/ness$/, '')
+    .replace(/ful$/, '')
+    .replace(/ous$/, '')
+    .replace(/tion$/, '')
+    .replace(/able$/, '')
+    .replace(/ible$/, '');
+}
+
+
+// ===== Maze =====
+function clickMaze(cellIndex) {
+  const ch = chambers[2];
+  const cell = ch.grid[cellIndex];
+  const el = document.getElementById(`maze-${cellIndex}`);
+
+  // Can only click adjacent cells (right or down from current)
+  const cols = ch.gridCols || 6;
+  const curRow = Math.floor(mazeCurrentIndex / cols);
+  const curCol = mazeCurrentIndex % cols;
+  const clickRow = Math.floor(cellIndex / cols);
+  const clickCol = cellIndex % cols;
+
+  const isRight = (clickRow === curRow && clickCol === curCol + 1);
+  const isDown = (clickCol === curCol && clickRow === curRow + 1);
+
+  if (!isRight && !isDown) return;
+  if (mazeVisited.includes(cellIndex)) return;
+
+  if (cell.correct) {
+    mazeVisited.push(cellIndex);
+    document.getElementById(`maze-${mazeCurrentIndex}`).classList.remove('current');
+    if (!ch.grid[mazeCurrentIndex].isStart) {
+      document.getElementById(`maze-${mazeCurrentIndex}`).classList.add('visited');
+    }
+    el.classList.remove('path', 'end');
+    el.classList.add('current');
+    mazeCurrentIndex = cellIndex;
+
+    if (cell.isEnd) {
+      chamberScores[2] = 1;
+      el.classList.add('visited');
+      showChamberResult(2);
+    }
+  } else {
+    el.classList.remove('path');
+    el.classList.add('wrong-path');
+    // Reset to start after brief delay
+    setTimeout(() => {
+      // Reset all cells
+      ch.grid.forEach((c, i) => {
+        const cel = document.getElementById(`maze-${i}`);
+        cel.className = c.isStart ? 'maze-cell start current' : c.isEnd ? 'maze-cell end' : 'maze-cell path';
+      });
+      mazeVisited = [0];
+      mazeCurrentIndex = 0;
+      const fb = document.getElementById('feedback-2');
+      fb.className = 'feedback error';
+      fb.textContent = 'The stone crumbles! Back to the start...';
+      fb.style.display = 'block';
+      setTimeout(() => { fb.style.display = 'none'; }, 2000);
+    }, 600);
+  }
+}
+
+// ===== Purpose Clauses =====
+let pcSelections = {};
+let pcAnswered = {};
+
+function selectUtNe(chamberIdx, puzzleIdx, choice, btn) {
+  const key = `${chamberIdx}-${puzzleIdx}`;
+  pcSelections[key] = choice;
+  // Highlight selected
+  const item = document.getElementById(`pc-${chamberIdx}-${puzzleIdx}`);
+  const buttons = item.querySelectorAll('.option-btn');
+  buttons.forEach(b => { b.style.background = '#1e1e2e'; b.style.borderColor = '#3a3a4a'; });
+  btn.style.background = '#3a2a10';
+  btn.style.borderColor = '#c9a84c';
+}
+
+function checkPurpose(chamberIdx, puzzleIdx) {
+  const key = `${chamberIdx}-${puzzleIdx}`;
+  if (pcAnswered[key]) return;
+
+  const puzzle = chambers[chamberIdx].puzzles[puzzleIdx];
+  const selection = pcSelections[key];
+  const input = document.getElementById(`pcinput-${chamberIdx}-${puzzleIdx}`);
+  const userTrans = input.value.trim().toLowerCase().replace(/[.,!?;:'"]/g, '');
+  const fb = document.getElementById(`pcfeedback-${chamberIdx}-${puzzleIdx}`);
+
+  if (!selection) {
+    fb.className = 'feedback error';
+    fb.textContent = 'Choose ut or nē first!';
+    fb.style.display = 'block';
+    return;
+  }
+
+  const gapCorrect = selection === puzzle.utOrNe;
+  const transCorrect = puzzle.translation.some(t => fuzzyMatch(userTrans, t.toLowerCase()));
+
+  if (gapCorrect && transCorrect) {
+    fb.className = 'feedback success';
+    fb.textContent = '✓ Both correct! The pillar glows.';
+    fb.style.display = 'block';
+    chamberScores[chamberIdx]++;
+    pcAnswered[key] = true;
+    input.disabled = true;
+  } else if (gapCorrect && !transCorrect) {
+    fb.className = 'feedback error';
+    fb.textContent = `The gap is right (${puzzle.utOrNe}), but your translation needs work. Try again.`;
+    fb.style.display = 'block';
+    if (!pcAnswered[key + '-attempts']) pcAnswered[key + '-attempts'] = 0;
+    pcAnswered[key + '-attempts']++;
+    if (pcAnswered[key + '-attempts'] >= 3) {
+      fb.textContent = `Answer: ${puzzle.utOrNe} — "${puzzle.translation[0]}"`;
+      input.disabled = true;
+      pcAnswered[key] = true;
+    }
+  } else {
+    fb.className = 'feedback error';
+    fb.textContent = `Think again about ut vs nē — is this a positive or negative purpose?`;
+    fb.style.display = 'block';
+    if (!pcAnswered[key + '-attempts']) pcAnswered[key + '-attempts'] = 0;
+    pcAnswered[key + '-attempts']++;
+    if (pcAnswered[key + '-attempts'] >= 3) {
+      fb.textContent = `Answer: ${puzzle.utOrNe} — "${puzzle.translation[0]}"`;
+      input.disabled = true;
+      pcAnswered[key] = true;
+    }
+  }
+
+  const total = chambers[chamberIdx].puzzles.length;
+  const done = Object.keys(pcAnswered).filter(k => k.startsWith(`${chamberIdx}-`) && !k.includes('attempts')).length;
+  if (done >= total) {
+    showChamberResult(chamberIdx);
+  }
+}
+
+// ===== Final Translation =====
+let ftAnswered = {};
+let finalLives = 1; // Only one life in Chamber V — one wrong answer triggers penalty
+
+function checkFinal(chamberIdx, puzzleIdx) {
+  const key = `${chamberIdx}-${puzzleIdx}`;
+  if (ftAnswered[key]) return;
+
+  const input = document.getElementById(`input-${chamberIdx}-${puzzleIdx}`);
+  const userAnswer = input.value.trim().toLowerCase().replace(/[.,!?;:'"]/g, '');
+  const puzzle = chambers[chamberIdx].puzzles[puzzleIdx];
+  const fb = document.getElementById(`ftfeedback-${chamberIdx}-${puzzleIdx}`);
+  const ch = chambers[chamberIdx];
+
+  // Use semantic checking for the new final chamber
+  let isCorrect = false;
+  if (puzzle.required) {
+    const result = semanticCheck(userAnswer, puzzle);
+    isCorrect = result.pass;
+    if (puzzle.reject && puzzle.reject.length > 0) {
+      if (puzzle.reject.some(r => userAnswer.includes(r))) isCorrect = false;
+    }
+  } else if (puzzle.answer) {
+    isCorrect = puzzle.answer.some(a => fuzzyMatch(userAnswer, a.toLowerCase()));
+  }
+
+  if (isCorrect) {
+    fb.className = 'feedback success';
+    fb.textContent = '✓ The seal cracks! A fragment of the code appears.';
+    fb.style.display = 'block';
+    input.disabled = true;
+    input.style.borderColor = '#4caf50';
+    chamberScores[chamberIdx]++;
+    ftAnswered[key] = true;
+
+    const total = ch.puzzles.length;
+    const done = Object.keys(ftAnswered).filter(k => k.startsWith(`${chamberIdx}-`) && !k.includes('attempts')).length;
+    if (done >= total) {
+      showChamberResult(chamberIdx);
+    }
+  } else {
+    // PENALTY: wrong answer in Chamber V sends them back
+    if (ch.penalty) {
+      fb.className = 'feedback error';
+      fb.innerHTML = '<strong>The tomb trembles...</strong> Your translation was wrong. The ground gives way beneath you!';
+      fb.style.display = 'block';
+
+      // Dramatic delay before reset
+      setTimeout(() => {
+        triggerPenaltyReset();
+      }, 2000);
+    } else {
+      fb.className = 'feedback error';
+      fb.textContent = 'Not quite — check your grammar and try again.';
+      fb.style.display = 'block';
+      if (!ftAnswered[key + '-attempts']) ftAnswered[key + '-attempts'] = 0;
+      ftAnswered[key + '-attempts']++;
+      if (ftAnswered[key + '-attempts'] >= 3) {
+        fb.textContent = `The tomb reveals: "${puzzle.sampleAnswer || puzzle.answer[0]}"`;
+        input.disabled = true;
+        ftAnswered[key] = true;
+      }
+    }
+  }
+}
+
+function triggerPenaltyReset() {
+  // Reset Chamber V state
+  chamberScores[4] = 0;
+  ftAnswered = {};
+
+  // Reset Chambers II, III, IV state too
+  chamberScores[1] = 0;
+  chamberScores[2] = 0;
+  chamberScores[3] = 0;
+  transAnswered = {};
+  pcSelections = {};
+  pcAnswered = {};
+  mazeVisited = [0];
+  mazeCurrentIndex = 0;
+
+  // Rebuild chambers II-V (fresh HTML)
+  buildAllChambers();
+
+  // Show a dramatic overlay message
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;animation:fadeIn 0.5s;';
+  overlay.innerHTML = `
+    <h2 style="font-family:Cinzel,serif;font-size:2rem;color:#e84040;margin-bottom:1rem;">You Have Been Cast Back</h2>
+    <p style="color:#b8a88a;max-width:500px;text-align:center;line-height:1.8;margin-bottom:0.5rem;">The tomb punishes your error. The doors behind you slam shut and reseal.</p>
+    <p style="color:#8a7a5a;max-width:500px;text-align:center;line-height:1.8;margin-bottom:2rem;">You must fight your way through Chambers II, III, and IV again before you can attempt the final door.</p>
+    <button onclick="this.parentElement.remove();showChamber(1);window.scrollTo({top:0});" style="font-family:Cinzel,serif;font-size:1.1rem;padding:0.8rem 2rem;background:linear-gradient(135deg,#8b2020,#c04040);color:#fff;border:none;border-radius:4px;cursor:pointer;letter-spacing:1px;">Return to Chamber II</button>
+  `;
+  document.body.appendChild(overlay);
+}
+
+// ===== Chamber Completion =====
+function showChamberResult(idx) {
+  const fb = document.getElementById(`feedback-${idx}`);
+  const score = chamberScores[idx];
+  const total = chamberTotals[idx];
+  const advBtn = document.getElementById(`advance-${idx}`);
+
+  if (idx === 2) { // maze is pass/fail
+    if (score >= 1) {
+      fb.className = 'feedback success';
+      fb.textContent = `You found the safe path! The door opens.`;
+      fb.style.display = 'block';
+      advBtn.style.display = 'block';
+    }
+  } else if (idx === 4) { // final chamber needs 4/5
+    if (score >= 4) {
+      fb.className = 'feedback success';
+      fb.textContent = `${score}/${total} code fragments found. The final door unlocks!`;
+      fb.style.display = 'block';
+      advBtn.style.display = 'block';
+    } else {
+      fb.className = 'feedback error';
+      fb.textContent = `${score}/${total} — you need at least 4 to escape. The door stays sealed.`;
+      fb.style.display = 'block';
+      // Don't allow advance but let them see what happened
+    }
+  } else {
+    fb.className = 'feedback success';
+    fb.textContent = `${score}/${total} correct. The door creaks open...`;
+    fb.style.display = 'block';
+    advBtn.style.display = 'block';
+  }
+}
+
+function advanceChamber(idx) {
+  if (idx >= 4) {
+    showVictory();
+    return;
+  }
+  showChamber(idx + 1);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function skipTo(idx) {
+  // Teacher debug: mark previous chambers as complete and jump ahead
+  for (let i = 0; i < idx; i++) {
+    chamberScores[i] = chamberTotals[i];
+  }
+  showChamber(idx);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== End Screens =====
+function showVictory() {
+  clearInterval(timerInterval);
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('victory-screen').style.display = 'flex';
+
+  const elapsed = Math.floor((Date.now() - startTime) / 1000);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+  document.getElementById('final-time').textContent = `Escaped in ${mins}m ${secs}s`;
+
+  let summaryHTML = '';
+  const names = ['The Future Gate', 'The Impersonal Lock', 'The Path of eō', 'The Purpose Chamber', 'The Final Door'];
+  for (let i = 0; i < 5; i++) {
+    summaryHTML += `<div class="score-row">
+      <span class="label">${names[i]}</span>
+      <span class="value">${chamberScores[i]}/${chamberTotals[i]}</span>
+    </div>`;
+  }
+  const totalScore = chamberScores.reduce((a, b) => a + b, 0);
+  const totalPossible = chamberTotals.reduce((a, b) => a + b, 0);
+  summaryHTML += `<div class="score-row" style="border-top:2px solid #c9a84c; margin-top:0.5rem; padding-top:0.5rem;">
+    <span class="label" style="color:#c9a84c;">TOTAL</span>
+    <span class="value" style="font-size:1.2rem;">${totalScore}/${totalPossible}</span>
+  </div>`;
+  document.getElementById('score-summary').innerHTML = summaryHTML;
+}
+
+function showDefeat() {
+  document.getElementById('game-screen').style.display = 'none';
+  document.getElementById('defeat-screen').style.display = 'flex';
+
+  let summaryHTML = '';
+  const names = ['The Future Gate', 'The Impersonal Lock', 'The Path of eō', 'The Purpose Chamber', 'The Final Door'];
+  for (let i = 0; i < 5; i++) {
+    summaryHTML += `<div class="score-row">
+      <span class="label">${names[i]}</span>
+      <span class="value">${i <= currentChamber ? chamberScores[i] + '/' + chamberTotals[i] : '—'}</span>
+    </div>`;
+  }
+  summaryHTML += `<div class="score-row"><span class="label">Reached</span><span class="value">Chamber ${currentChamber + 1}/5</span></div>`;
+  document.getElementById('defeat-summary').innerHTML = summaryHTML;
+}
+
+// ===== Utility =====
+function fuzzyMatch(userStr, targetStr) {
+  // Normalize both
+  const u = userStr.replace(/\s+/g, ' ').trim();
+  const t = targetStr.replace(/\s+/g, ' ').trim();
+  if (u === t) return true;
+
+  // Allow minor differences (Levenshtein distance <= 3 for longer strings)
+  if (u.length > 10 && levenshtein(u, t) <= 3) return true;
+  if (u.length > 5 && levenshtein(u, t) <= 2) return true;
+
+  // Check if all key words are present (order-insensitive for short answers)
+  const tWords = t.split(' ').filter(w => w.length > 2);
+  const uWords = u.split(' ');
+  const matchCount = tWords.filter(tw => uWords.some(uw => levenshtein(uw, tw) <= 1)).length;
+  if (matchCount >= tWords.length * 0.85) return true;
+
+  return false;
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const d = Array.from({length: m + 1}, (_, i) => [i]);
+  for (let j = 1; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      d[i][j] = Math.min(
+        d[i-1][j] + 1,
+        d[i][j-1] + 1,
+        d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)
+      );
+    }
+  }
+  return d[m][n];
+}
+</script>
+</body>
+</html>
